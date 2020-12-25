@@ -1,0 +1,8 @@
+dist-newstyle/
+Setup.hs
+
+input/
+
+*.code-workspace
+
+

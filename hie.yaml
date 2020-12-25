@@ -1,0 +1,6 @@
+cradle:
+  cabal:
+    - path: "./src/"
+      component: "adventofcode:exe:adventofcode"
+
+
