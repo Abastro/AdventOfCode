@@ -8,7 +8,7 @@ digitInt pred str = sum
   $ iterate (*2) 1
 
 seats :: [String] -> [Int]
-seats = map (digitInt (\c -> c == 'B' || c == 'R'))
+seats = map $ digitInt (\c -> c == 'B' || c == 'R')
 
 sol1 :: [String] -> Int
 sol1 = maximum . seats

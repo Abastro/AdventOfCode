@@ -20,8 +20,7 @@ data PassScheme = PassScheme {
 parseScheme :: ReadP PassScheme
 parseScheme = do
   Number low <- lex; expect $ Symbol "-"; Number high <- lex
-  Ident k <- lex; expect $ Symbol ":"
-  Ident pw <- lex
+  Ident k <- lex; expect $ Symbol ":"; Ident pw <- lex
   pure PassScheme {
     lowBnd = numToInt low
     , highBnd = numToInt high
@@ -31,14 +30,12 @@ parseScheme = do
 
 sol1 :: [String] -> Int
 sol1 list = length $ do
-  entry <- list
-  (scheme, "") <- readP_to_S parseScheme entry
+  (scheme, "") <- list >>= readP_to_S parseScheme
   let numKey = length $ filter (== key scheme) $ password scheme
   guard (numKey >= lowBnd scheme && numKey <= highBnd scheme)
 
 sol2 :: [String] -> Int
 sol2 list = length $ do
-  entry <- list
-  (scheme, "") <- readP_to_S parseScheme entry
+  (scheme, "") <- list >>= readP_to_S parseScheme
   let locs = [password scheme !! (lowBnd scheme-1), password scheme !! (highBnd scheme-1)]
   guard $ [key scheme] == filter (== key scheme) locs

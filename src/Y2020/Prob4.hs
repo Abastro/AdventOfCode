@@ -2,7 +2,7 @@ module Y2020.Prob4 where
 
 import Prelude hiding ( lex )
 
-import Control.Monad (guard)
+import Control.Monad ( (>=>), guard )
 
 import Data.Char ( isLetter, isSpace, isDigit )
 import Data.List ( (\\) )
@@ -15,10 +15,10 @@ import Text.ParserCombinators.ReadP
     ( ReadP,
       char,
       string,
-      choice,
       (<++),
       (+++),
       satisfy,
+      pfail,
       many,
       count,
       munch,
@@ -26,11 +26,14 @@ import Text.ParserCombinators.ReadP
       sepBy,
       skipMany,
       skipSpaces )
---import Text.ParserCombinators.ReadPrec ( lexP )
 
 data Height = CM Int | IN Int
 newtype HairColor = HairColor String
 data EyeColor = Amb | Blu | Brn | Gry | Grn | Hzl | Oth
+newtype PassID = PassID String
+
+eyeCl :: [(String, EyeColor)]
+eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), ("hzl", Hzl), ("oth", Oth)]
 
 instance Read Height where
   readPrec = readP_to_Prec $ const $ do
@@ -45,30 +48,23 @@ instance Read HairColor where
       $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
 
 instance Read EyeColor where
-  readPrec = readP_to_Prec $ const $ choice [
-        do Ident "amb" <- lex; pure Amb
-      , do Ident "blu" <- lex; pure Blu
-      , do Ident "brn" <- lex; pure Brn
-      , do Ident "gry" <- lex; pure Gry
-      , do Ident "grn" <- lex; pure Grn
-      , do Ident "hzl" <- lex; pure Hzl
-      , do Ident "oth" <- lex; pure Oth
-    ]
+  readPrec = readP_to_Prec $ const $ do
+    Ident clr <- lex
+    maybe pfail pure $ lookup clr eyeCl
+
+instance Read PassID where
+  readPrec = readP_to_Prec $ const $
+    fmap PassID $ count 9 $ satisfy isDigit
 
 data Credential = Credential {
-  byr :: Int
-  , iyr :: Int
-  , eyr :: Int
-  , hgt :: Height
-  , hcl :: HairColor
-  , ecl :: EyeColor
-  , pid :: String
+  byr :: Int, iyr :: Int, eyr :: Int
+  , hgt :: Height, hcl :: HairColor, ecl :: EyeColor
+  , pid :: PassID
 }
 
 readCred :: ReadP [[(String, String)]]
 readCred = (<* skipSpaces) . (`sepBy` string "\n") . many $ do
-  field <- munch isLetter
-  char ':'
+  field <- munch isLetter; char ':'
   name <- munch $ not . isSpace
   skipMany $ char ' '
   (char '\n' >> pure ()) <++ pure ()
@@ -82,22 +78,18 @@ sol1 inp = length $ do
     \\ map fst credential)
 
 sol2 :: String -> Int
-sol2 inp = let
-    readList i s = maybeToList $ lookup i s >>= readMaybe
-
-  in length $ do
+sol2 inp = length $ do
   (creds, "") <- readP_to_S readCred inp
   cred <- creds
-  credent <- Credential
-    <$> readList "byr" cred <*> readList "iyr" cred <*> readList "eyr" cred
-    <*> readList "hgt" cred
-    <*> readList "hcl" cred <*> readList "ecl" cred
-    <*> maybeToList (lookup "pid" cred)
+  let readField i = lookup i cred >>= readMaybe
+  credent <- maybeToList $ Credential
+    <$> readField "byr" <*> readField "iyr" <*> readField "eyr"
+    <*> readField "hgt" <*> readField "hcl" <*> readField "ecl"
+    <*> readField "pid"
   guard $ byr credent >= 1920 && byr credent <= 2002
   guard $ iyr credent >= 2010 && iyr credent <= 2020
   guard $ eyr credent >= 2020 && eyr credent <= 2030
   case hgt credent of
     CM h -> guard $ h >= 150 && h <= 193
     IN h -> guard $ h >= 59 && h <= 76
-  guard $ length (pid credent) == 9
 
