@@ -13,8 +13,7 @@ import qualified Data.HashMap.Lazy as M
 import Text.ParserCombinators.ReadP
 import Text.Read.Lex ( Lexeme(..), lex, numberToInteger )
 
-import GHC.Generics (Generic)
-import Debug.Trace (traceShow)
+import GHC.Generics ( Generic )
 
 data Bag = Bag String String deriving (Eq, Ord, Generic, Show)
 instance Hashable Bag

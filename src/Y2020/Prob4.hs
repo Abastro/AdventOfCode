@@ -1,31 +1,17 @@
 module Y2020.Prob4 where
 
-import Prelude hiding ( lex )
+import Control.Monad ( guard )
 
-import Control.Monad ( (>=>), guard )
-
-import Data.Char ( isLetter, isSpace, isDigit )
+import Data.Char ( isDigit )
 import Data.List ( (\\) )
 import Data.Maybe ( maybeToList )
 
-import Text.Read ( Read(..), readMaybe, readP_to_Prec )
-import Text.Read.Lex ( Lexeme(..), lex, numberToInteger )
+import Text.Read ( Read(..), readMaybe, prec, lexP, lift, (+++), pfail )
+import Text.Read.Lex ( Lexeme(..), numberToInteger, expect )
 
-import Text.ParserCombinators.ReadP
-    ( ReadP,
-      char,
-      string,
-      (<++),
-      (+++),
-      satisfy,
-      pfail,
-      many,
-      count,
-      munch,
-      readP_to_S,
-      sepBy,
-      skipMany,
-      skipSpaces )
+import Text.ParserCombinators.ReadP ( count, satisfy )
+
+import Common ( deintercalate )
 
 data Height = CM Int | IN Int
 newtype HairColor = HairColor String
@@ -36,25 +22,25 @@ eyeCl :: [(String, EyeColor)]
 eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), ("hzl", Hzl), ("oth", Oth)]
 
 instance Read Height where
-  readPrec = readP_to_Prec $ const $ do
-    Number num <- lex
+  readPrec = prec 0 $ do
+    Number num <- lexP
     Just n <- pure $ fromInteger <$> numberToInteger num
-    (do Ident "cm" <- lex; pure $ CM n) +++ (do Ident "in" <- lex; pure $ IN n)
+    (do Ident "cm" <- lexP; pure $ CM n) +++ (do Ident "in" <- lexP; pure $ IN n)
 
 instance Read HairColor where
-  readPrec = readP_to_Prec $ const $ do
-    char '#'
-    fmap HairColor $ count 6
+  readPrec = prec 0 $ do
+    lift . expect $ Symbol "#"
+    fmap HairColor $ lift . count 6
       $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
 
 instance Read EyeColor where
-  readPrec = readP_to_Prec $ const $ do
-    Ident clr <- lex
+  readPrec = prec 0 $ do
+    Ident clr <- lexP
     maybe pfail pure $ lookup clr eyeCl
 
 instance Read PassID where
-  readPrec = readP_to_Prec $ const $
-    fmap PassID $ count 9 $ satisfy isDigit
+  readPrec = prec 0 $ do
+    fmap PassID . lift $ count 9 $ satisfy isDigit
 
 data Credential = Credential {
   byr :: Int, iyr :: Int, eyr :: Int
@@ -62,25 +48,21 @@ data Credential = Credential {
   , pid :: PassID
 }
 
-readCred :: ReadP [[(String, String)]]
-readCred = (<* skipSpaces) . (`sepBy` string "\n") . many $ do
-  field <- munch isLetter; char ':'
-  name <- munch $ not . isSpace
-  skipMany $ char ' '
-  (char '\n' >> pure ()) <++ pure ()
-  pure (field, name)
+readCred :: [String] -> [(String, String)]
+readCred cr = do
+  prop <- concat $ words <$> cr
+  let [field, val] = deintercalate ':' prop
+  [(field, val)]
 
-sol1 :: String -> Int
+sol1 :: [String] -> Int
 sol1 inp = length $ do
-  (creds, "") <- readP_to_S readCred inp
-  credential <- creds
+  cred <- readCred <$> deintercalate [] inp
   guard $ null (["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
-    \\ map fst credential)
+    \\ map fst cred)
 
-sol2 :: String -> Int
+sol2 :: [String] -> Int
 sol2 inp = length $ do
-  (creds, "") <- readP_to_S readCred inp
-  cred <- creds
+  cred <- readCred <$> deintercalate [] inp
   let readField i = lookup i cred >>= readMaybe
   credent <- maybeToList $ Credential
     <$> readField "byr" <*> readField "iyr" <*> readField "eyr"
