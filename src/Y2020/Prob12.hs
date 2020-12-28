@@ -1,12 +1,11 @@
 module Y2020.Prob12 where
 
-import Debug.Trace
 import Data.Foldable ( Foldable(..) )
 
 data Dir = N | E | S | W deriving (Enum, Show)
 data TDir = L | R deriving Show
 data Action = Move Dir Int | Turn TDir Int | Front Int
-data Pos = Pos { east :: Int, north :: Int } deriving Show
+data Pos = Pos { east :: Int, north :: Int }
 
 addPos :: Pos -> Pos -> Pos
 addPos (Pos e n) (Pos e' n') = Pos (e + e') (n + n')

@@ -70,4 +70,5 @@ runAll = unlines . map show . M.toList <$> sequenceA (foldr M.delete apps ["2020
 
 main :: IO ()
 main = putStrLn "Put code:" >> getLine
-  >>= (M.!) (M.insert "all" runAll apps) >>= putStrLn
+  >>= sequenceA . (M.!?) (M.insert "all" runAll apps)
+  >>= maybe (putStrLn "Wrong code") putStrLn

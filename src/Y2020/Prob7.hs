@@ -4,59 +4,55 @@ import Prelude hiding ( lex )
 
 import Control.Monad ( guard )
 
-import Data.Maybe ( fromJust )
-import Data.Monoid ( Sum(..) )
 import Data.Foldable ( Foldable(..) )
 import Data.Hashable ( Hashable )
 import qualified Data.HashMap.Lazy as M
 
-import Text.ParserCombinators.ReadP
-import Text.Read.Lex ( Lexeme(..), lex, numberToInteger )
+import Text.Read ( prec, readPrec, lexP, lift, (+++) )
+import Text.ParserCombinators.ReadP ( string, skipSpaces, sepBy1 )
+import Text.Read.Lex ( Lexeme(..), expect )
 
 import GHC.Generics ( Generic )
+
+import Common ( numToInt, liftFn )
 
 data Bag = Bag String String deriving (Eq, Ord, Generic, Show)
 instance Hashable Bag
 
+instance Read Bag where
+  readPrec = prec 0 $ do
+    Ident tone <- lexP; Ident color <- lexP
+    Ident plur <- lexP; guard $ plur == "bag" || plur == "bags"
+    pure $ Bag tone color
+
 type BagMap = M.HashMap Bag
+newtype Rule = Rule { getRule :: (Bag, BagMap Int) }
 
-readBag :: ReadP Bag
-readBag = do
-  Ident tone <- lex; Ident color <- lex
-  Ident plur <- lex; guard $ plur == "bag" || plur == "bags"
-  pure $ Bag tone color
+instance Read Rule where
+  readPrec = prec 0 $ do
+    mainBag <- readPrec; lift . expect $ Ident "contain"
+    bags <- readConts; lift . expect $ Symbol "."
+    pure $ Rule . (mainBag, ) . M.fromList $ bags
+    where
+      readConts = prec 0 (lift $ skipSpaces >> string "no other bags" >> pure [])
+        +++ prec 0 (liftFn (`sepBy1` string ",") $ do
+          Number n <- lexP; (, numToInt n) <$> readPrec)
 
-readRule :: ReadP (Bag, BagMap Int)
-readRule = do
-  mainBag <- readBag; Ident "contain" <- lex
-  bags <- readConts
-  char '.' >> pure (mainBag, M.fromList bags)
-  where
-    readConts = (skipSpaces >> string "no other bags" >> pure []) <++
-      sepBy1 (do
-        Number n <- lex
-        Just num <- pure $ fromInteger <$> numberToInteger n
-        (, num) <$> readBag) (char ',')
-
--- TODO More efficient implementation
-unpack :: BagMap (BagMap Int) -> Bag -> BagMap Int
-unpack bags this = fold $ do
-  content <- M.lookup this bags
-  let unpacked = M.mapWithKey (\bag num -> (* num) <$> unpack bags bag) content
-  pure $ foldr (M.unionWith (+)) (M.singleton this 1) unpacked
-
-readRules :: [String] -> BagMap (BagMap Int)
-readRules inp = M.fromList $ do
-  (rule, "") <- inp >>= readP_to_S readRule
-  pure rule
+-- Laziness works like cache here
+unpacked :: BagMap (BagMap Int) -> BagMap (BagMap Int)
+unpacked bags = let
+    unpacked = M.mapWithKey (\bag num -> (* num) <$> result M.! bag)
+    result = (`M.mapWithKey` bags) $ \this content ->
+      foldr (M.unionWith (+)) (M.singleton this 1) $ unpacked content
+  in result
 
 sol1 :: [String] -> Int
-sol1 inp = let rules = readRules inp in
-  subtract 1 $ fromJust $ M.lookup (Bag "shiny" "gold")
+sol1 inp = let rules = M.fromList $ getRule . read <$> inp in
+  subtract 1 $ (M.! Bag "shiny" "gold")
   $ foldr (M.unionWith (+)) M.empty
-  $ M.map (const 1) . unpack rules <$> M.keys rules
+  $ M.map (const 1) . (unpacked rules M.!) <$> M.keys rules
 
 sol2 :: [String] -> Int
-sol2 inp = let rules = readRules inp in
-  subtract 1 $ getSum $ foldMap Sum $ unpack rules (Bag "shiny" "gold")
+sol2 inp = let rules = M.fromList $ getRule . read <$> inp in
+  subtract 1 $ sum $ unpacked rules M.! Bag "shiny" "gold"
 

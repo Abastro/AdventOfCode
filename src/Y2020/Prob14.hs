@@ -1,39 +1,36 @@
 module Y2020.Prob14 where
 
-import Prelude hiding ( lex )
-
 import Data.Foldable ( Foldable(..) )
 import Data.Bits ( Bits(..) )
-import Data.Maybe ( fromJust )
 import Data.List ( subsequences )
 import qualified Data.IntMap as M
 
-import Text.Read ( readP_to_Prec, Read(..) )
-import Text.Read.Lex ( Lexeme(..), lex, numberToInteger )
+import Text.Read ( Read(..), prec, lexP, choice, pfail, lift )
+import Text.Read.Lex ( Lexeme(..), expect )
 import qualified Text.ParserCombinators.ReadP as RP
+
+import Common ( liftFn, numToInt )
 
 data BitMask = Z | I | X deriving (Eq, Show)
 data Instr = Mask [BitMask] | Mem Int Int deriving Show
 
 instance Read Instr where
-  readPrec = readP_to_Prec $ const
-    $ RP.choice [ do
-      Ident "mask" <- lex; Punc "=" <- lex; RP.skipSpaces
-      fmap Mask . RP.many $ RP.get >>= interpret
+  readPrec = prec 0 $ choice [ do
+      lift . expect $ Ident "mask"; lift . expect $ Punc "="; lift RP.skipSpaces
+      fmap Mask . liftFn RP.many $ lift RP.get >>= interpret
     , do
-      Ident "mem" <- lex
-      Number pos <- RP.between (RP.char '[') (RP.char ']') lex
-      Punc "=" <- lex
-      Number n <- lex
+      lift . expect $ Ident "mem"
+      Number pos <- liftFn (RP.between (RP.char '[') (RP.char ']')) lexP
+      lift . expect $ Punc "="
+      Number n <- lexP
       pure $ Mem (numToInt pos) (numToInt n)
     ] where
-      numToInt = fromInteger . fromJust . numberToInteger
       interpret '0' = pure Z
       interpret '1' = pure I
       interpret 'X' = pure X
-      interpret _ = RP.pfail
+      interpret _ = pfail
 
--- Lens would've made this much more concise
+-- NOTE: Lens would've made this much more concise
 data ProgState a = ProgState {
   mask0 :: a, mask1 :: Int, memory :: M.IntMap Int
 }

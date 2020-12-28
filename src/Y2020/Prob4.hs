@@ -7,11 +7,11 @@ import Data.List ( (\\) )
 import Data.Maybe ( maybeToList )
 
 import Text.Read ( Read(..), readMaybe, prec, lexP, lift, (+++), pfail )
-import Text.Read.Lex ( Lexeme(..), numberToInteger, expect )
+import Text.Read.Lex ( Lexeme(..), expect )
 
 import Text.ParserCombinators.ReadP ( count, satisfy )
 
-import Common ( deintercalate )
+import Common ( deintercalate, numToInt )
 
 data Height = CM Int | IN Int
 newtype HairColor = HairColor String
@@ -24,7 +24,7 @@ eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), (
 instance Read Height where
   readPrec = prec 0 $ do
     Number num <- lexP
-    Just n <- pure $ fromInteger <$> numberToInteger num
+    let n = numToInt num
     (do Ident "cm" <- lexP; pure $ CM n) +++ (do Ident "in" <- lexP; pure $ IN n)
 
 instance Read HairColor where
@@ -39,8 +39,7 @@ instance Read EyeColor where
     maybe pfail pure $ lookup clr eyeCl
 
 instance Read PassID where
-  readPrec = prec 0 $ do
-    fmap PassID . lift $ count 9 $ satisfy isDigit
+  readPrec = prec 0 $ fmap PassID . lift $ count 9 $ satisfy isDigit
 
 data Credential = Credential {
   byr :: Int, iyr :: Int, eyr :: Int

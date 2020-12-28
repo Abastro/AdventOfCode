@@ -3,8 +3,7 @@ module Y2020.Prob10 where
 import Data.List ( sort, foldl' )
 import qualified Data.IntMap as M
 
-count :: Eq a => a -> [a] -> Int
-count n = length . filter (== n)
+import Common ( count )
 
 lookOrZ :: Int -> M.IntMap Int -> Int
 lookOrZ = M.findWithDefault 0
