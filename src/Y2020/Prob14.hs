@@ -1,19 +1,16 @@
-module Y2020.Prob14 where
+module Y2020.Prob14 ( sol1, sol2 ) where
 
 import Data.Foldable ( Foldable(..) )
 import Data.Bits ( Bits(..) )
 import Data.List ( subsequences )
 import qualified Data.IntMap as M
-
 import Text.Read ( Read(..), prec, lexP, choice, pfail, lift )
 import Text.Read.Lex ( Lexeme(..), expect )
 import qualified Text.ParserCombinators.ReadP as RP
-
 import Common ( liftFn, numToInt )
 
 data BitMask = Z | I | X deriving (Eq, Show)
 data Instr = Mask [BitMask] | Mem Int Int deriving Show
-
 instance Read Instr where
   readPrec = prec 0 $ choice [ do
       lift . expect $ Ident "mask"; lift . expect $ Punc "="; lift RP.skipSpaces
@@ -21,13 +18,10 @@ instance Read Instr where
     , do
       lift . expect $ Ident "mem"
       Number pos <- liftFn (RP.between (RP.char '[') (RP.char ']')) lexP
-      lift . expect $ Punc "="
-      Number n <- lexP
+      lift . expect $ Punc "="; Number n <- lexP
       pure $ Mem (numToInt pos) (numToInt n)
     ] where
-      interpret '0' = pure Z
-      interpret '1' = pure I
-      interpret 'X' = pure X
+      interpret '0' = pure Z; interpret '1' = pure I; interpret 'X' = pure X;
       interpret _ = pfail
 
 -- NOTE: Lens would've made this much more concise

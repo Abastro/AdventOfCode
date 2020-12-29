@@ -1,7 +1,6 @@
-module Y2020.Prob15 where
+module Y2020.Prob15 ( sol ) where
 
 import qualified Data.IntMap as M
-
 import Common ( deintercalate )
 
 sol :: Int -> String -> Int

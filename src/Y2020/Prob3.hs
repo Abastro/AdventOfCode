@@ -1,4 +1,4 @@
-module Y2020.Prob3 where
+module Y2020.Prob3 ( sol1, sol2 ) where
 
 sol1 :: Int -> Int -> [[Char]] -> Int
 sol1 moveX moveY inp = let

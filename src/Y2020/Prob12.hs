@@ -1,4 +1,4 @@
-module Y2020.Prob12 where
+module Y2020.Prob12 ( sol1, sol2 ) where
 
 import Data.Foldable ( Foldable(..) )
 
@@ -55,4 +55,3 @@ sol1 inp = let dest = foldl' (flip $ action . readAct) (E, Pos 0 0) inp in
 sol2 :: [String] -> Int
 sol2 inp = let dest = foldl' (flip $ action' . readAct) (Pos 10 1, Pos 0 0) inp in
   abs (east $ snd dest) + abs (north $ snd dest)
-

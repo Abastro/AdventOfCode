@@ -1,20 +1,17 @@
-module Y2020.Prob10 where
+module Y2020.Prob10 ( sol1, sol2 ) where
 
-import Data.List ( sort, foldl' )
+import Data.List ( sort )
+import qualified Data.IntSet as S
 import qualified Data.IntMap as M
-
 import Common ( count )
-
-lookOrZ :: Int -> M.IntMap Int -> Int
-lookOrZ = M.findWithDefault 0
 
 sol1 :: [Int] -> Int
 sol1 inp = let diffs = zipWith (-) (sort inp) (0 : sort inp) in
   count 1 diffs * (count 3 diffs + 1) -- last adapter has +3
 
 sol2 :: [Int] -> Int
-sol2 inp = let lookBack m i = lookOrZ (i-1) m + lookOrZ (i-2) m + lookOrZ (i-3) m in
-  (M.! maximum inp)
-  $ foldl' (\m i -> M.insert i (lookBack m i) m) (M.singleton 0 1)
-  $ sort inp
-
+sol2 inp = let
+    lookOrZ i = if i /= 0 then M.findWithDefault 0 i else const 1
+    lookBack m i = lookOrZ (i-1) m + lookOrZ (i-2) m + lookOrZ (i-3) m
+    lazyMap = M.fromSet (lookBack lazyMap) $ S.fromList inp
+  in lazyMap M.! maximum inp

@@ -1,19 +1,14 @@
 -- TODO: Reduce memory footprint using ST Monad
-module Y2020.Prob11 where
+module Y2020.Prob11 ( sol1, sol2 ) where
 
 import Control.Monad ( (>=>) )
-
 import Data.List ( find )
 import Data.Maybe ( catMaybes, mapMaybe )
 import Data.Function ( (&) )
 import qualified Data.Vector as V
-
 import Common ( count )
 
 type Seat = V.Vector (V.Vector Char)
-
-countSeat :: Char -> Seat -> Int
-countSeat ch = count ch . (V.toList >=> V.toList)
 
 seatAt :: Int -> Int -> Seat -> Maybe Char
 seatAt i j = (V.!? i) >=> (V.!? j)
@@ -28,10 +23,8 @@ process seat = let
 
 process' :: Seat -> Seat
 process' seat = let
-    maxI = V.length seat - 1
-    maxJ = V.length (seat V.! 0) - 1
-    less i = [(i-1), (i-2) .. 0]
-    more m i = [(i+1) .. m]
+    maxI = V.length seat - 1; maxJ = V.length (seat V.! 0) - 1
+    less i = [(i-1), (i-2) .. 0]; more m i = [(i+1) .. m]
     adj i j =
       catMaybes $ mapMaybe (find (/= Just '.'))
       $ zipWith (\p q -> seatAt p q seat)
@@ -42,10 +35,11 @@ process' seat = let
   in V.imap (V.imap . next) seat
 
 sol :: (Seat -> Seat) -> [[Char]] -> Int
-sol pro inp = let seats = V.fromList . map V.fromList $ inp
-  in (seats, pro seats)
+sol pro inp = let seats = V.fromList . map V.fromList $ inp in
+  (seats, pro seats)
   & until (uncurry (==)) (\(_, next) -> (next, pro next))
-  & countSeat '#' . snd
+  & countSeat '#' . snd where
+    countSeat ch = count ch . (V.toList >=> V.toList)
 
 sol1 :: [[Char]] -> Int
 sol1 = sol process

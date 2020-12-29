@@ -33,8 +33,8 @@ expect exp got = if exp == got then "Matches, Actual:" <> show got
 -- Apparently 4, 7, 10, 13, 18-20, 23 are hard ones but does not feel as such
 apps :: M.Map String (IO String)
 apps = M.fromList [
-    withRead "2020.01" 0 $ expect 786811 . Y2020.Prob1.sol1 2020 . map read . lines
-  , withRead "2020.01" 1 $ expect 199068980 . Y2020.Prob1.sol2 2020 . map read . lines
+    withRead "2020.01" 0 $ expect 786811 . Y2020.Prob1.sol 2 2020 . map read . lines
+  , withRead "2020.01" 1 $ expect 199068980 . Y2020.Prob1.sol 3 2020 . map read . lines
   , withRead "2020.02" 0 $ expect 445 . Y2020.Prob2.sol1 . lines
   , withRead "2020.02" 1 $ expect 491 . Y2020.Prob2.sol2 . lines
   , withRead "2020.03" 0 $ expect 276 . Y2020.Prob3.sol1 3 1 . lines

@@ -1,8 +1,7 @@
-module Y2020.Prob6 where
+module Y2020.Prob6 ( sol1, sol2 ) where
 
 import Data.Char (ord)
 import qualified Data.IntSet as S
-
 import Common ( deintercalate )
 
 sol1 :: [String] -> Int

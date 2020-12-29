@@ -1,15 +1,13 @@
-module Y2020.Prob5 where
+module Y2020.Prob5 ( sol1, sol2 ) where
 
 import Data.Bits ( Bits(..) )
 import qualified Data.IntSet as S
 
-digitInt :: (Char -> Bool) -> String -> Int
-digitInt pred str = sum
-  $ zipWith (\i k -> if pred i then k else 0) (reverse str)
-  $ iterate (`shift` 1) 1
-
-seats :: [String] -> [Int]
-seats = map $ digitInt (\c -> c == 'B' || c == 'R')
+seats :: [[Char]] -> [Int]
+seats = map $ digitInt (`elem` ['B', 'R']) where
+  digitInt pred str = sum
+    $ zipWith (\i k -> if pred i then k else 0) (reverse str)
+    $ iterate (`shift` 1) 1
 
 sol1 :: [String] -> Int
 sol1 = maximum . seats

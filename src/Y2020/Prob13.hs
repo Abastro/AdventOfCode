@@ -1,11 +1,9 @@
-module Y2020.Prob13 where
+module Y2020.Prob13 ( sol1, sol2 ) where
 
 import Data.Maybe ( catMaybes )
 import Data.Foldable ( minimumBy )
 import Data.Function ( on )
-
 import Text.Read ( readMaybe )
-
 import Common ( deintercalate )
 
 -- findInv n n' finds M: n'M = 1 (mod n) (*Coprime is checked)

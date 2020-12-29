@@ -1,4 +1,7 @@
-module Common where
+module Common (
+  boolToMaybe, count, deintercalate,
+  numToInt, liftFn
+) where
 
 import Data.List (groupBy)
 import Data.Maybe (fromJust)
@@ -7,6 +10,10 @@ import Data.Function (on)
 import Text.Read.Lex ( Number, numberToInteger )
 import Text.ParserCombinators.ReadP ( ReadP )
 import Text.ParserCombinators.ReadPrec ( ReadPrec, readP_to_Prec, readPrec_to_P )
+
+boolToMaybe :: Bool -> Maybe ()
+boolToMaybe True = Just ()
+boolToMaybe False = Nothing
 
 count :: Eq a => a -> [a] -> Int
 count n = length . filter (== n)

@@ -1,16 +1,12 @@
-module Y2020.Prob4 where
+module Y2020.Prob4 ( sol1, sol2 ) where
 
 import Control.Monad ( guard )
-
 import Data.Char ( isDigit )
 import Data.List ( (\\) )
 import Data.Maybe ( maybeToList )
-
 import Text.Read ( Read(..), readMaybe, prec, lexP, lift, (+++), pfail )
 import Text.Read.Lex ( Lexeme(..), expect )
-
 import Text.ParserCombinators.ReadP ( count, satisfy )
-
 import Common ( deintercalate, numToInt )
 
 data Height = CM Int | IN Int
@@ -23,21 +19,16 @@ eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), (
 
 instance Read Height where
   readPrec = prec 0 $ do
-    Number num <- lexP
-    let n = numToInt num
-    (do Ident "cm" <- lexP; pure $ CM n) +++ (do Ident "in" <- lexP; pure $ IN n)
-
+    Number num <- lexP; let n = numToInt num
+    ((lift.expect $ Ident "cm") >> pure (CM n)) +++ ((lift.expect $ Ident "in") >> pure (IN n))
 instance Read HairColor where
   readPrec = prec 0 $ do
-    lift . expect $ Symbol "#"
+    lift.expect $ Symbol "#"
     fmap HairColor $ lift . count 6
       $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
-
 instance Read EyeColor where
   readPrec = prec 0 $ do
-    Ident clr <- lexP
-    maybe pfail pure $ lookup clr eyeCl
-
+    Ident clr <- lexP; maybe pfail pure $ lookup clr eyeCl
 instance Read PassID where
   readPrec = prec 0 $ fmap PassID . lift $ count 9 $ satisfy isDigit
 
@@ -48,10 +39,7 @@ data Credential = Credential {
 }
 
 readCred :: [String] -> [(String, String)]
-readCred cr = do
-  prop <- concat $ words <$> cr
-  let [field, val] = deintercalate ':' prop
-  [(field, val)]
+readCred cr = map (fmap tail . span (/= ':')) $ concat $ words <$> cr
 
 sol1 :: [String] -> Int
 sol1 inp = length $ do
@@ -73,4 +61,3 @@ sol2 inp = length $ do
   case hgt credent of
     CM h -> guard $ h >= 150 && h <= 193
     IN h -> guard $ h >= 59 && h <= 76
-

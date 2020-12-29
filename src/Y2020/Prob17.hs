@@ -1,10 +1,8 @@
-module Y2020.Prob17 where
+module Y2020.Prob17 ( sol1, sol2 ) where
 
 import Data.Hashable ( Hashable )
 import qualified Data.HashSet as S
-
 import Common ( count )
-
 import GHC.Generics ( Generic )
 
 data Triple = Triple Int Int Int deriving (Eq, Generic)
@@ -21,9 +19,7 @@ neighbor' (Quad i j k l) = Quad
 
 readInit :: [[Char]] -> S.HashSet (Int, Int)
 readInit inp = S.fromList $ do
-  (i, line) <- zip [0..] inp
-  (j, '#') <- zip [0..] line
-  [(i, j)]
+  (i, line) <- zip [0..] inp; (j, '#') <- zip [0..] line; [(i, j)]
 
 process :: (Eq a, Hashable a) => (a -> [a]) -> S.HashSet a -> S.HashSet a
 process nbh st = let

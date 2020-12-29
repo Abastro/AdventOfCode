@@ -1,16 +1,13 @@
-module Y2020.Prob16 where
+module Y2020.Prob16 ( sol1, sol2 ) where
 
 import Data.List ( isPrefixOf, sortBy, inits, tails, (\\), transpose )
 import Data.Function ( on, (&) )
-
 import Text.Read ( Read(..), lift, prec, lexP )
 import Text.Read.Lex ( Lexeme(..), expect )
 import Text.ParserCombinators.ReadP ( munch, char, sepBy )
-
 import Common ( deintercalate, numToInt, liftFn )
 
 data Field = Field { name :: String, predicate :: Int -> Bool }
-
 instance Eq Field where
   (==) = (==) `on` name
 
@@ -29,9 +26,8 @@ interpret inp = let
     map read . deintercalate ',' <$> nearby)
 
 sol1 :: [String] -> Int
-sol1 inp = let
-    (fields, _, nearby) = interpret inp
-  in sum $ sum . filter (\i -> not $ any (($ i) . predicate) fields) <$> nearby
+sol1 inp = let (fields, _, nearby) = interpret inp in
+  sum $ sum . filter (\i -> not $ any (($ i) . predicate) fields) <$> nearby
 
 sol2 :: [String] -> Int
 sol2 inp = let

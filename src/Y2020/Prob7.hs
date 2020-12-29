@@ -1,24 +1,16 @@
-module Y2020.Prob7 where
-
-import Prelude hiding ( lex )
+module Y2020.Prob7 ( sol1, sol2 ) where
 
 import Control.Monad ( guard )
-
-import Data.Foldable ( Foldable(..) )
 import Data.Hashable ( Hashable )
 import qualified Data.HashMap.Lazy as M
-
 import Text.Read ( prec, readPrec, lexP, lift, (+++) )
 import Text.ParserCombinators.ReadP ( string, skipSpaces, sepBy1 )
 import Text.Read.Lex ( Lexeme(..), expect )
-
 import GHC.Generics ( Generic )
-
 import Common ( numToInt, liftFn )
 
 data Bag = Bag String String deriving (Eq, Ord, Generic, Show)
 instance Hashable Bag
-
 instance Read Bag where
   readPrec = prec 0 $ do
     Ident tone <- lexP; Ident color <- lexP
@@ -27,15 +19,14 @@ instance Read Bag where
 
 type BagMap = M.HashMap Bag
 newtype Rule = Rule { getRule :: (Bag, BagMap Int) }
-
 instance Read Rule where
   readPrec = prec 0 $ do
     mainBag <- readPrec; lift . expect $ Ident "contain"
     bags <- readConts; lift . expect $ Symbol "."
     pure $ Rule . (mainBag, ) . M.fromList $ bags
     where
-      readConts = prec 0 (lift $ skipSpaces >> string "no other bags" >> pure [])
-        +++ prec 0 (liftFn (`sepBy1` string ",") $ do
+      readConts = lift (skipSpaces >> string "no other bags" >> pure [])
+        +++ liftFn (`sepBy1` string ",") (do
           Number n <- lexP; (, numToInt n) <$> readPrec)
 
 -- Laziness works like cache here
@@ -55,4 +46,3 @@ sol1 inp = let rules = M.fromList $ getRule . read <$> inp in
 sol2 :: [String] -> Int
 sol2 inp = let rules = M.fromList $ getRule . read <$> inp in
   subtract 1 $ sum $ unpacked rules M.! Bag "shiny" "gold"
-

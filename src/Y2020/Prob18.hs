@@ -1,13 +1,10 @@
-module Y2020.Prob18 where
+module Y2020.Prob18 ( sol1, sol2 ) where
 
 import Text.Read ( Read(..), prec, step, parens, choice, lexP, lift )
 import Text.Read.Lex ( Lexeme(..), expect )
-
 import Common ( numToInt )
 
 data Expr = Num Int | Expr :+: Expr | Expr :*: Expr deriving Show
-newtype Expr' = Expr' { getExpr :: Expr }
-
 instance Read Expr where
   readPrec = parens $ choice [prec 1 $ do
       Number p <- lexP
@@ -23,7 +20,7 @@ instance Read Expr where
           lift . expect $ Symbol "*"; e' <- step readPrec
           re <- readRest; pure $ \e -> re (e :*: e')
         ]
-
+newtype Expr' = Expr' { getExpr :: Expr }
 instance Read Expr' where
   readPrec = fmap Expr' $ parens $ choice [prec 2 $ do
       Number p <- lexP; pure $ Num $ numToInt p
