@@ -1,3 +1,4 @@
+-- TODO: Reduce memory footprint using ST Monad
 module Y2020.Prob11 where
 
 import Control.Monad ( (>=>) )
@@ -40,7 +41,6 @@ process' seat = let
     next _ _ '.' = '.'
   in V.imap (V.imap . next) seat
 
--- TODO: Optimize, how?
 sol :: (Seat -> Seat) -> [[Char]] -> Int
 sol pro inp = let seats = V.fromList . map V.fromList $ inp
   in (seats, pro seats)

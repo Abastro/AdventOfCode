@@ -34,6 +34,8 @@ executable AdventOfCode
       Y2020.Prob14
       Y2020.Prob15
       Y2020.Prob16
+      Y2020.Prob17
+      Y2020.Prob18
   build-depends:
       base >=4.13 && <4.14
     , containers ==0.6.*
