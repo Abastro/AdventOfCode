@@ -20,6 +20,11 @@ import qualified Y2020.Prob15
 import qualified Y2020.Prob16
 import qualified Y2020.Prob17
 import qualified Y2020.Prob18
+import qualified Y2020.Prob19
+import qualified Y2020.Prob20
+import qualified Y2020.Prob21
+import qualified Y2020.Prob22
+import qualified Y2020.Prob23
 
 withRead :: String -> Int -> (String -> a) -> (String, IO a)
 withRead ident num app = (,) (ident <> "." <> show num) $ do
@@ -69,6 +74,17 @@ apps = M.fromList [
   , withRead "2020.17" 1 $ expect 2460 . Y2020.Prob17.sol2 . lines
   , withRead "2020.18" 0 $ expect 6640667297513 . Y2020.Prob18.sol1 . lines
   , withRead "2020.18" 1 $ expect 451589894841552 . Y2020.Prob18.sol2 . lines
+  , withRead "2020.19" 0 $ expect 122 . Y2020.Prob19.sol1 . lines
+  , withRead "2020.19" 1 $ expect 287 . Y2020.Prob19.sol2 . lines
+  , withRead "2020.20" 0 $ expect 59187348943703 . Y2020.Prob20.sol1 . lines
+  , withRead "2020.20" 1 $ expect 1565 . Y2020.Prob20.sol2 . lines
+  , withRead "2020.21" 0 $ expect 2211 . Y2020.Prob21.sol1 . lines
+  , withRead "2020.21" 1 $ expect "vv,nlxsmb,rnbhjk,bvnkk,ttxvphb,qmkz,trmzkcfg,jpvz"
+    . Y2020.Prob21.sol2 . lines
+  , withRead "2020.22" 0 $ expect 32677 . Y2020.Prob22.sol1 . lines
+  , withRead "2020.22" 1 $ expect 33661 . Y2020.Prob22.sol2 . lines
+  , withRead "2020.23" 0 $ expect "" . Y2020.Prob23.sol1
+
   ]
 
 runAll :: IO String
