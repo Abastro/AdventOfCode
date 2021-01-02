@@ -6,7 +6,6 @@ module Common (
 import Data.List (groupBy)
 import Data.Maybe (fromJust)
 import Data.Function (on)
-
 import Text.Read.Lex ( Number, numberToInteger )
 import Text.ParserCombinators.ReadP ( ReadP )
 import Text.ParserCombinators.ReadPrec ( ReadPrec, readP_to_Prec, readPrec_to_P )

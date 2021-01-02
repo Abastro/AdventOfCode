@@ -25,6 +25,8 @@ import qualified Y2020.Prob20
 import qualified Y2020.Prob21
 import qualified Y2020.Prob22
 import qualified Y2020.Prob23
+import qualified Y2020.Prob24
+import qualified Y2020.Prob25
 
 withRead :: String -> Int -> (String -> a) -> (String, IO a)
 withRead ident num app = (,) (ident <> "." <> show num) $ do
@@ -35,7 +37,6 @@ expect :: (Eq a, Show a) => a -> a -> String
 expect exp got = if exp == got then "Matches, Actual:" <> show got
   else "Expected: " <> show exp <> ", Actual: " <> show got
 
--- Apparently 4, 7, 10, 13, 18-20, 23 are hard ones but does not feel as such
 apps :: M.Map String (IO String)
 apps = M.fromList [
     withRead "2020.01" 0 $ expect 786811 . Y2020.Prob1.sol 2 2020 . map read . lines
@@ -83,12 +84,16 @@ apps = M.fromList [
     . Y2020.Prob21.sol2 . lines
   , withRead "2020.22" 0 $ expect 32677 . Y2020.Prob22.sol1 . lines
   , withRead "2020.22" 1 $ expect 33661 . Y2020.Prob22.sol2 . lines
-  , withRead "2020.23" 0 $ expect "" . Y2020.Prob23.sol1
-
+  , withRead "2020.23" 0 $ expect "69852437" . Y2020.Prob23.sol1
+  , withRead "2020.23" 1 $ expect 91408386135 . Y2020.Prob23.sol2
+  , withRead "2020.24" 0 $ expect 326 . Y2020.Prob24.sol1 . lines
+  , withRead "2020.24" 1 $ expect 3979 . Y2020.Prob24.sol2 . lines
+  , withRead "2020.25" 0 $ expect 19414467 . Y2020.Prob25.sol . map read . lines
   ]
 
 runAll :: IO String
-runAll = unlines . map show . M.toList <$> sequenceA (foldr M.delete apps ["2020.15.1"])
+runAll = unlines . map show . M.toList <$> sequenceA (foldr M.delete apps [
+  "2020.15.1", "2020.23.1"])
 
 main :: IO ()
 main = putStrLn "Put code:" >> getLine
