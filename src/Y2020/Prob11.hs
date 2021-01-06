@@ -1,49 +1,37 @@
--- TODO: Reduce memory footprint using ST Monad
 module Y2020.Prob11 ( sol1, sol2 ) where
 
-import Control.Monad ( (>=>) )
+import Data.Word ( Word8 )
 import Data.List ( find )
-import Data.Maybe ( catMaybes, mapMaybe )
-import Data.Function ( (&) )
-import qualified Data.Vector as V
-import Common ( count )
+import Data.Maybe ( mapMaybe )
+import qualified Data.Vector.Unboxed as V
+import Common ( count, c2word )
 
-type Seat = V.Vector (V.Vector Char)
+data Frame = Frame { validX :: Int -> Bool, validY :: Int -> Bool
+  , encode :: Int -> Int -> Int, decodeX :: Int -> Int, decodeY :: Int -> Int }
+mkFrame :: [[a]] -> Frame
+mkFrame inp = Frame { validX = \x -> x >= 0 && x < width, validY = \y -> y >= 0 && y < height
+  , encode = \x y -> x + y * width, decodeX = (`mod` width), decodeY = (`div` width)
+} where width = length $ head inp; height = length inp
 
-seatAt :: Int -> Int -> Seat -> Maybe Char
-seatAt i j = (V.!? i) >=> (V.!? j)
-
-process :: Seat -> Seat
-process seat = let
-    adj i j = catMaybes $ seatAt <$> [i-1, i, i+1] <*> [j-1, j, j+1] <*> [seat]
-    next i j 'L' = if count '#' (adj i j) == 0 then '#' else 'L'
-    next i j '#' = if count '#' (adj i j) >= 5 then 'L' else  '#'
-    next _ _ '.' = '.'
-  in V.imap (V.imap . next) seat
-
-process' :: Seat -> Seat
-process' seat = let
-    maxI = V.length seat - 1; maxJ = V.length (seat V.! 0) - 1
-    less i = [(i-1), (i-2) .. 0]; more m i = [(i+1) .. m]
-    adj i j =
-      catMaybes $ mapMaybe (find (/= Just '.'))
-      $ zipWith (\p q -> seatAt p q seat)
-      <$> [less i, repeat i, more maxI i] <*> [less j, repeat j, more maxJ j]
-    next i j 'L' = if count '#' (adj i j) == 0 then '#' else 'L'
-    next i j '#' = if count '#' (adj i j) >= 6 then 'L' else '#'
-    next _ _ '.' = '.'
-  in V.imap (V.imap . next) seat
-
-sol :: (Seat -> Seat) -> [[Char]] -> Int
-sol pro inp = let seats = V.fromList . map V.fromList $ inp in
-  (seats, pro seats)
-  & until (uncurry (==)) (\(_, next) -> (next, pro next))
-  & countSeat '#' . snd where
-    countSeat ch = count ch . (V.toList >=> V.toList)
+sol :: Int -> (Int -> [Int]) -> V.Vector Word8 -> Int
+sol acc nb seats = count (c2word '#') . V.toList . snd
+  $ until (uncurry (==)) (\(_, next) -> next `seq` (next, step next))
+  (seats, step seats) where
+    step seat = (`V.imap` seat) $ next . count (c2word '#') . map (seat V.!) . nb
+    next c u | u == c2word 'L' = if c == 0 then c2word '#' else c2word 'L'
+             | u == c2word '#' = if c >= acc then c2word 'L' else c2word '#'
+    next _ u = u
 
 sol1 :: [[Char]] -> Int
-sol1 = sol process
+sol1 inp = sol 5 adj seats where
+  seats = V.fromList . fmap c2word . concat $ inp; fr = mkFrame inp
+  adj p = let i = decodeX fr p; j = decodeY fr p in
+    encode fr <$> filter (validX fr) [i-1, i, i+1] <*> filter (validY fr) [j-1, j, j+1]
 
 sol2 :: [[Char]] -> Int
-sol2 = sol process'
-
+sol2 inp = sol 6 adj seats where
+  seats = V.fromList . fmap c2word . concat $ inp; fr = mkFrame inp
+  ranges f i = map (takeWhile f . tail) [iterate pred i, repeat i, iterate succ i]
+  adj p = let i = decodeX fr p; j = decodeY fr p in
+    mapMaybe (find ((/= c2word '.') . (seats V.!))) $ zipWith (encode fr)
+    <$> ranges (validX fr) i <*> ranges (validY fr) j

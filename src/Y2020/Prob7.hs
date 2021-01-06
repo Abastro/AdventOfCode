@@ -7,7 +7,7 @@ import Text.Read ( prec, readPrec, lexP, lift, (+++) )
 import Text.ParserCombinators.ReadP ( string, skipSpaces, sepBy1 )
 import Text.Read.Lex ( Lexeme(..), expect )
 import GHC.Generics ( Generic )
-import Common ( numToInt, liftFn )
+import Common ( liftFn )
 
 data Bag = Bag String String deriving (Eq, Ord, Generic, Show)
 instance Hashable Bag
@@ -26,15 +26,14 @@ instance Read Rule where
     pure $ Rule . (mainBag, ) . M.fromList $ bags
     where
       readConts = lift (skipSpaces >> string "no other bags" >> pure [])
-        +++ liftFn (`sepBy1` string ",") (do
-          Number n <- lexP; (, numToInt n) <$> readPrec)
+        +++ liftFn (`sepBy1` string ",") (do n <- readPrec; (, n) <$> readPrec)
 
 -- Laziness works like cache here
 unpacked :: BagMap (BagMap Int) -> BagMap (BagMap Int)
 unpacked bags = let
-    unpacked = M.mapWithKey (\bag num -> (* num) <$> result M.! bag)
-    result = (`M.mapWithKey` bags) $ \this content ->
-      foldr (M.unionWith (+)) (M.singleton this 1) $ unpacked content
+  unpacked = M.mapWithKey (\bag num -> (* num) <$> result M.! bag)
+  result = (`M.mapWithKey` bags) $ \this content ->
+    foldr (M.unionWith (+)) (M.singleton this 1) $ unpacked content
   in result
 
 sol1 :: [String] -> Int

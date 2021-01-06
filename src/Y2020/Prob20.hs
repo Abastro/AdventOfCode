@@ -13,7 +13,7 @@ import Common ( deintercalate )
 data Dir = N | W | S | E deriving (Eq, Ord, Enum, Show)
 -- Describes LR-flip
 data Face = U | D deriving (Eq, Ord, Enum, Show)
--- Flip-Rotate (i.e. Direction denotes N side)
+-- Flip-Rotate (i.e. Direction denotes N side); Has D8 group structure
 data Orient = Orient { face :: Face, dir :: Dir } deriving (Eq, Ord, Show)
 instance Semigroup Dir where
   dir <> dir' = toEnum $ (fromEnum dir + fromEnum dir') `mod` 4
@@ -25,11 +25,8 @@ instance Semigroup Orient where
 -- Inverts Orient in group sense
 invert :: Orient -> Orient
 invert (Orient f dir) = Orient f (flipTo (f <> D) dir)
-
 flipTo :: Face -> Dir -> Dir
-flipTo U dir = dir
-flipTo D dir = toEnum $ (- fromEnum dir) `mod` 4
-
+flipTo U dir = dir; flipTo D dir = toEnum $ (- fromEnum dir) `mod` 4
 transform :: Orient -> (Int, Int) -> (Int, Int)
 transform (Orient D dir) (x, y) = transform (Orient U dir) (-x, y)
 transform (Orient U dir) c = rotate dir c where
@@ -53,14 +50,14 @@ instance Semigroup TileConn where
 
 connectTiles :: [(Int, [(Orient, Int)])] -> M.IntMap TileConn
 connectTiles tiles = let
-    gather = M.elems . M.fromListWith (<>) $ fmap pure <$> do
-      (tile, conn) <- tiles; (ori, bnd) <- conn
-      pure (bnd, (ori, tile))
-    -- Prevent connection to self, and discard flipped ones
-    conn (ori, tile) (ori', tile') = if face ori == D || tile == tile' then M.empty else
-      M.singleton tile $ TileConn $ M.singleton (fromEnum $ dir ori)
-      -- Make it 'flip to south' and rotate to fit
-        [(tile', ori <> Orient D S <> invert ori')]
+  gather = M.elems . M.fromListWith (<>) $ fmap pure <$> do
+    (tile, conn) <- tiles; (ori, bnd) <- conn
+    pure (bnd, (ori, tile))
+  -- Prevent connection to self, and discard flipped ones
+  conn (ori, tile) (ori', tile') = if face ori == D || tile == tile' then M.empty else
+    M.singleton tile $ TileConn $ M.singleton (fromEnum $ dir ori)
+    -- Make it 'flip to south' and rotate to fit
+      [(tile', ori <> Orient D S <> invert ori')]
   in M.unionsWith (<>) $ do list <- gather; conn <$> list <*> list
 
 -- Tiling with normal x,y coordinates
@@ -104,8 +101,7 @@ extendTiling conn dir (remain, tiling) = do
   guard $ IS.size found == M.size new -- Need to be all distinct
   pure (remain `IS.difference` found, insertAbove dir m new tiling)
   where
-    tileOn N i j = tileAt i j; tileOn S i j = tileAt i j
-    tileOn W i j = tileAt j i; tileOn E i j = tileAt j i
+    tileOn dir i j = if dir `elem` [N, S] then tileAt i j else tileAt j i
     range i j = if i <= j then [i..j] else [j..i]
     rangeMap i j = M.fromAscList $ zip (range i j) (range i j)
 
@@ -133,17 +129,17 @@ sol1 inp = let found = findTiling $ readTiles inp in
 
 sol2 :: [String] -> Int
 sol2 inp = let
-    size = subtract 2 . length $ snd . head $ readTiles inp
-    stripBnd = tail . init . map (tail . init)
-    tiles = M.fromList $ fmap (asMap . stripBnd) <$> readTiles inp
-    tileAtWith ori = flip $ uncurry tileAt
-      . transformPos size (Orient U W <> invert ori)
-    sorted = (fmap . fmap) (\(tile, ori') -> tileAtWith ori' (tiles M.! tile))
-      $ findTiling $ readTiles inp
-    imgAt (i, j) = tileAt (i `div` size) (j `div` size) sorted (i `mod` size, j `mod` size)
-    imgIndices = (,) <$> [maxOn W sorted * size .. pred $ (maxOn E sorted + 1) * size]
-      <*> [maxOn S sorted * size .. pred $ (maxOn N sorted + 1) * size]
-    sharps = S.fromList $ filter ((== '#') . imgAt) imgIndices
+  size = subtract 2 . length $ snd . head $ readTiles inp
+  stripBnd = tail . init . map (tail . init)
+  tiles = M.fromList $ fmap (asMap . stripBnd) <$> readTiles inp
+  tileAtWith ori = flip $ uncurry tileAt
+    . transformPos size (Orient U W <> invert ori)
+  sorted = (fmap . fmap) (\(tile, ori') -> tileAtWith ori' (tiles M.! tile))
+    $ findTiling $ readTiles inp
+  imgAt (i, j) = tileAt (i `div` size) (j `div` size) sorted (i `mod` size, j `mod` size)
+  imgIndices = (,) <$> [maxOn W sorted * size .. pred $ (maxOn E sorted + 1) * size]
+    <*> [maxOn S sorted * size .. pred $ (maxOn N sorted + 1) * size]
+  sharps = S.fromList $ filter ((== '#') . imgAt) imgIndices
   in (S.size sharps -) . (* S.size seaMonCoords) . fromJust . find (> 0) $ do
     ori <- Orient <$> [U, D] <*> [N, W, S, E]
     pure . length $ do

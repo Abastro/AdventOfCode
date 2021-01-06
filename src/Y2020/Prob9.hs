@@ -1,8 +1,7 @@
--- Apparently, this would not work on 32 bit machines
 module Y2020.Prob9 ( sol1, sol2 ) where
 
-import Data.Maybe ( fromJust, isJust )
-import Data.List ( find, tails, inits )
+import Data.Maybe ( fromJust )
+import Data.List ( find, tails )
 import qualified Data.IntSet as S
 import qualified Data.IntMap as M
 
@@ -12,13 +11,10 @@ sol1 inp = let pred (is, j) = isPairAdd (S.fromList is) j in
   where isPairAdd set sus = not . S.null $ S.intersection set $ S.map (sus -) set
 
 sol2 :: [Int] -> Int
-sol2 inp = let
-    val = sol1 inp
-    among = fromJust . fromJust $ find isJust
-      $ map (\(m, s) -> m M.!? (s - val)) -- Does it sum?
-      $ scanl (\(m, _) (s, l) -> (M.insert s l m, s)) (M.empty, 0)
-      $ zip (sum <$> inits inp) (tails inp) -- Lists the splits
-    desired = fmap snd <$> takeWhile ((/= val). fst)
-      $ zip (sum <$> inits among) among
-  in minimum desired + maximum desired
-
+sol2 inp = minimum desired + maximum desired where
+  target = sol1 inp; desired = findRange M.empty 0 inp
+  withSum l = zip l $ scanl (+) 0 l
+  findRange sums curSum rem@(x:xs) = case poss of
+    Just found -> fmap fst $ takeWhile ((/= target) . snd) $ withSum found
+    Nothing -> findRange (M.insert curSum rem sums) (curSum + x) xs
+    where poss = sums M.!? (curSum - target)

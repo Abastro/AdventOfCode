@@ -9,13 +9,12 @@ import Common ( deintercalate )
 
 data Rule = Str String | Refer Int | Rule ::: Rule | Rule :|: Rule
 instance Read Rule where
-  readPrec = choice [prec 2 $ Str <$> readPrec
+  readPrec = choice [ prec 2 $ Str <$> readPrec
     , prec 2 $ Refer <$> readPrec
     , prec 1 $ do r <- step readPrec; r' <- readPrec; pure $ r ::: r'
     , prec 0 $ do
       r <- step readPrec; lift . expect $ Punc "|"; r' <- readPrec
-      pure $ r :|: r'
-    ]
+      pure $ r :|: r' ]
 
 readInput :: [String] -> (M.IntMap Rule, [String])
 readInput inp = let [rules, messages] = deintercalate [] inp in

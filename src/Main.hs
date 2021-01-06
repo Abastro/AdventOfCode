@@ -1,5 +1,6 @@
 module Main where
 
+import System.TimeIt
 import qualified Data.Map as M
 
 import qualified Y2020.Prob1
@@ -17,6 +18,7 @@ import qualified Y2020.Prob12
 import qualified Y2020.Prob13
 import qualified Y2020.Prob14
 import qualified Y2020.Prob15
+import qualified Y2020.Prob15a
 import qualified Y2020.Prob16
 import qualified Y2020.Prob17
 import qualified Y2020.Prob18
@@ -25,13 +27,14 @@ import qualified Y2020.Prob20
 import qualified Y2020.Prob21
 import qualified Y2020.Prob22
 import qualified Y2020.Prob23
+import qualified Y2020.Prob23a
 import qualified Y2020.Prob24
 import qualified Y2020.Prob25
 
 withRead :: String -> Int -> (String -> a) -> (String, IO a)
 withRead ident num app = (,) (ident <> "." <> show num) $ do
   file <- readFile $ "input/" <> ident
-  pure $ app file
+  timeIt $ pure $! app file
 
 expect :: (Eq a, Show a) => a -> a -> String
 expect exp got = if exp == got then "Matches, Actual:" <> show got
@@ -69,10 +72,12 @@ apps = M.fromList [
   , withRead "2020.14" 1 $ expect 3435342392262 . Y2020.Prob14.sol2 . lines
   , withRead "2020.15" 0 $ expect 706 . Y2020.Prob15.sol 2020
   , withRead "2020.15" 1 $ expect 19331 . Y2020.Prob15.sol 30000000
+  , withRead "2020.15" 10 $ expect 706 . Y2020.Prob15a.sol 2020
+  , withRead "2020.15" 11 $ expect 19331 . Y2020.Prob15a.sol 30000000
   , withRead "2020.16" 0 $ expect 24110 . Y2020.Prob16.sol1 . lines
   , withRead "2020.16" 1 $ expect 6766503490793 . Y2020.Prob16.sol2 . lines
-  , withRead "2020.17" 0 $ expect 424 . Y2020.Prob17.sol1 . lines
-  , withRead "2020.17" 1 $ expect 2460 . Y2020.Prob17.sol2 . lines
+  , withRead "2020.17" 0 $ expect 424 . Y2020.Prob17.sol 3 . lines
+  , withRead "2020.17" 1 $ expect 2460 . Y2020.Prob17.sol 4 . lines
   , withRead "2020.18" 0 $ expect 6640667297513 . Y2020.Prob18.sol1 . lines
   , withRead "2020.18" 1 $ expect 451589894841552 . Y2020.Prob18.sol2 . lines
   , withRead "2020.19" 0 $ expect 122 . Y2020.Prob19.sol1 . lines
@@ -86,14 +91,17 @@ apps = M.fromList [
   , withRead "2020.22" 1 $ expect 33661 . Y2020.Prob22.sol2 . lines
   , withRead "2020.23" 0 $ expect "69852437" . Y2020.Prob23.sol1
   , withRead "2020.23" 1 $ expect 91408386135 . Y2020.Prob23.sol2
+  , withRead "2020.23" 10 $ expect "69852437" . Y2020.Prob23a.sol1
+  , withRead "2020.23" 11 $ expect 91408386135 . Y2020.Prob23a.sol2
   , withRead "2020.24" 0 $ expect 326 . Y2020.Prob24.sol1 . lines
   , withRead "2020.24" 1 $ expect 3979 . Y2020.Prob24.sol2 . lines
   , withRead "2020.25" 0 $ expect 19414467 . Y2020.Prob25.sol . map read . lines
   ]
 
 runAll :: IO String
-runAll = unlines . map show . M.toList <$> sequenceA (foldr M.delete apps [
-  "2020.15.1", "2020.23.1"])
+runAll = "" <$ traverse printFor (M.toList $
+  foldr M.delete apps ["2020.15.1", "2020.15.11", "2020.23.1"]) where
+    printFor (i, res) = putStrLn i >> res >>= putStrLn >> putStrLn ""
 
 main :: IO ()
 main = putStrLn "Put code:" >> getLine

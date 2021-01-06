@@ -1,5 +1,11 @@
 dist-newstyle/
 Setup.hs
+*.local
+*.prof
+*.hp
+*.aux
+*.ps
+*.pdf
 
 input/
 

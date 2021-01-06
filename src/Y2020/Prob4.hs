@@ -1,5 +1,6 @@
 module Y2020.Prob4 ( sol1, sol2 ) where
 
+import Data.Functor ( ($>) )
 import Control.Monad ( guard )
 import Data.Char ( isDigit )
 import Data.List ( (\\) )
@@ -7,20 +8,16 @@ import Data.Maybe ( maybeToList )
 import Text.Read ( Read(..), readMaybe, prec, lexP, lift, (+++), pfail )
 import Text.Read.Lex ( Lexeme(..), expect )
 import Text.ParserCombinators.ReadP ( count, satisfy )
-import Common ( deintercalate, numToInt )
+import Common ( deintercalate )
 
 data Height = CM Int | IN Int
 newtype HairColor = HairColor String
 data EyeColor = Amb | Blu | Brn | Gry | Grn | Hzl | Oth
 newtype PassID = PassID String
-
-eyeCl :: [(String, EyeColor)]
-eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), ("hzl", Hzl), ("oth", Oth)]
-
 instance Read Height where
   readPrec = prec 0 $ do
-    Number num <- lexP; let n = numToInt num
-    ((lift.expect $ Ident "cm") >> pure (CM n)) +++ ((lift.expect $ Ident "in") >> pure (IN n))
+    n <- readPrec
+    ((lift.expect $ Ident "cm") $> CM n) +++ ((lift.expect $ Ident "in") $> IN n)
 instance Read HairColor where
   readPrec = prec 0 $ do
     lift.expect $ Symbol "#"
@@ -28,14 +25,14 @@ instance Read HairColor where
       $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
 instance Read EyeColor where
   readPrec = prec 0 $ do
-    Ident clr <- lexP; maybe pfail pure $ lookup clr eyeCl
+    Ident clr <- lexP; maybe pfail pure $ lookup clr eyeCl where
+    eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), ("hzl", Hzl), ("oth", Oth)]
 instance Read PassID where
   readPrec = prec 0 $ fmap PassID . lift $ count 9 $ satisfy isDigit
 
 data Credential = Credential {
   byr :: Int, iyr :: Int, eyr :: Int
-  , hgt :: Height, hcl :: HairColor, ecl :: EyeColor
-  , pid :: PassID
+  , hgt :: Height, hcl :: HairColor, ecl :: EyeColor, pid :: PassID
 }
 
 readCred :: [String] -> [(String, String)]
@@ -44,8 +41,7 @@ readCred cr = map (fmap tail . span (/= ':')) $ concat $ words <$> cr
 sol1 :: [String] -> Int
 sol1 inp = length $ do
   cred <- readCred <$> deintercalate [] inp
-  guard $ null (["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
-    \\ map fst cred)
+  guard $ null (["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"] \\ map fst cred)
 
 sol2 :: [String] -> Int
 sol2 inp = length $ do

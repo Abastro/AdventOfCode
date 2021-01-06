@@ -1,42 +1,28 @@
-module Y2020.Prob17 ( sol1, sol2 ) where
+module Y2020.Prob17 ( sol ) where
 
-import Data.Hashable ( Hashable )
+import Data.Int ( Int8 )
+import Data.Foldable ( Foldable(..) )
+import Data.Hashable ( Hashable(..) )
+import qualified Data.Vector.Unboxed as V
 import qualified Data.HashSet as S
-import Common ( count )
-import GHC.Generics ( Generic )
+import Common ( count, applyN )
 
-data Triple = Triple Int Int Int deriving (Eq, Generic)
-instance Hashable Triple
-neighbor :: Triple -> [Triple]
-neighbor (Triple i j k) = Triple
-  <$> [i-1, i, i+1] <*> [j-1, j, j+1] <*> [k-1, k, k+1]
+newtype Pos = Pos { getV :: V.Vector Int8 } deriving Eq
+instance Hashable Pos where
+  hashWithSalt s = V.foldl' hashWithSalt s . getV; {-# INLINE hashWithSalt #-}
 
-data Quad = Quad Int Int Int Int deriving (Eq, Generic)
-instance Hashable Quad
-neighbor' :: Quad -> [Quad]
-neighbor' (Quad i j k l) = Quad
-  <$> [i-1, i, i+1] <*> [j-1, j, j+1] <*> [k-1, k, k+1] <*> [l-1, l, l+1]
+process :: Int -> [Pos] -> [Pos]
+process dim st = filter next $ Pos <$> V.generateM dim (\i -> [nMin i..nMax i]) where
+  nMax i = succ $ foldl' (flip $ max . (V.! i) . getV) minBound st
+  nMin i = pred $ foldl' (flip $ min . (V.! i) . getV) maxBound st
+  set = S.fromList st;    nbs = V.replicateM dim [-1, 0, 1]
+  adjCnt (Pos v) = count True $ (`S.member` set) . Pos . V.imap ((+) . (v V.!)) <$> nbs
+  next pos
+    | pos `S.member` set = (||) <$> (== 3) <*> (== 4) $ adjCnt pos -- One more from # itself
+    | otherwise = (== 3) $ adjCnt pos
 
-readInit :: [[Char]] -> S.HashSet (Int, Int)
-readInit inp = S.fromList $ do
-  (i, line) <- zip [0..] inp; (j, '#') <- zip [0..] line; [(i, j)]
-
-process :: (Eq a, Hashable a) => (a -> [a]) -> S.HashSet a -> S.HashSet a
-process nbh st = let
-    adj pos = map (`S.member` st) $ nbh pos
-    next pos
-      | S.member pos st = count True (adj pos) `elem` [3, 4] -- One more from # itself
-      | otherwise = count True (adj pos) == 3
-  in S.filter next $ foldr1 S.union $ S.map (S.fromList . nbh) st
-
-sol1 :: [[Char]] -> Int
-sol1 inp = let
-    cube = S.map (uncurry $ Triple 0) $ readInit inp
-  in S.size $ iterate (process neighbor) cube !! 6
-
-sol2 :: [[Char]] -> Int
-sol2 inp = let
-    cube = S.map (uncurry $ Quad 0 0) $ readInit inp
-  in S.size $ iterate (process neighbor') cube !! 6
-
-
+sol :: Int -> [[Char]] -> Int
+sol dim inp = length $ applyN 6 (process dim) input where
+  input = do
+    (i, line) <- zip [0..] inp; (j, '#') <- zip [0..] line
+    pure . Pos $ V.replicate dim 0 V.// [(0, i), (1, j)]

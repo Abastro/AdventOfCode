@@ -4,14 +4,14 @@ import Control.Monad ( guard )
 import Data.Function ( on )
 import Text.Read ( Read(..), lexP, lift, prec )
 import Text.Read.Lex ( Lexeme(..), expect )
-import Common ( numToInt, count )
+import Common ( count )
 
 data PassScheme = PassScheme Int Int Char String
 instance Read PassScheme where
   readPrec = prec 0 $ do
-    Number low <- lexP; lift . expect $ Symbol "-"; Number high <- lexP
-    Ident k <- lexP; lift . expect $ Symbol ":"; Ident pw <- lexP
-    pure $ PassScheme (numToInt low) (numToInt high) (head k) pw
+    low <- readPrec; lift.expect $ Symbol "-"; high <- readPrec
+    Ident k <- lexP; lift.expect $ Symbol ":"; Ident pw <- lexP
+    pure $ PassScheme low high (head k) pw
 
 sol1 :: [String] -> Int
 sol1 list = length $ do

@@ -1,34 +1,29 @@
 module Y2020.Prob18 ( sol1, sol2 ) where
 
-import Text.Read ( Read(..), prec, step, parens, choice, lexP, lift )
+import Text.Read ( Read(..), prec, step, parens, choice, lift )
 import Text.Read.Lex ( Lexeme(..), expect )
-import Common ( numToInt )
 
 data Expr = Num Int | Expr :+: Expr | Expr :*: Expr deriving Show
 instance Read Expr where
-  readPrec = parens $ choice [prec 1 $ do
-      Number p <- lexP
-      ($ Num (numToInt p)) <$> readRest
+  readPrec = parens $ choice [ prec 1 $ do
+      p <- readPrec; ($ Num p) <$> readRest
     , prec 0 $ do
-      e <- step readPrec
-      ($ e) <$> readRest
+      e <- step readPrec; ($ e) <$> readRest
     ] where
-      readRest = choice [pure id, prec 0 $ do
-          lift . expect $ Symbol "+"; e' <- step readPrec
+      readRest = choice [ pure id, prec 0 $ do
+          lift.expect $ Symbol "+"; e' <- step readPrec
           re <- readRest; pure $ \e -> re (e :+: e')
         , prec 0 $ do
-          lift . expect $ Symbol "*"; e' <- step readPrec
-          re <- readRest; pure $ \e -> re (e :*: e')
-        ]
+          lift.expect $ Symbol "*"; e' <- step readPrec
+          re <- readRest; pure $ \e -> re (e :*: e') ]
 newtype Expr' = Expr' { getExpr :: Expr }
 instance Read Expr' where
-  readPrec = fmap Expr' $ parens $ choice [prec 2 $ do
-      Number p <- lexP; pure $ Num $ numToInt p
+  readPrec = fmap Expr' $ parens $ choice [prec 2 $ Num <$> readPrec
     , prec 1 $ do
-      e <- step readPrec; lift . expect $ Symbol "+"; e' <- readPrec
+      e <- step readPrec; lift.expect $ Symbol "+"; e' <- readPrec
       pure $ getExpr e :+: getExpr e'
     , prec 0 $ do
-      e <- step readPrec; lift . expect $ Symbol "*"; e' <- readPrec
+      e <- step readPrec; lift.expect $ Symbol "*"; e' <- readPrec
       pure $ getExpr e :*: getExpr e'
     ]
 
