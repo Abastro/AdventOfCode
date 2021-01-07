@@ -3,9 +3,8 @@ module Y2020.Prob7 ( sol1, sol2 ) where
 import Control.Monad ( guard )
 import Data.Hashable ( Hashable )
 import qualified Data.HashMap.Lazy as M
-import Text.Read ( prec, readPrec, lexP, lift, (+++) )
+import Text.Read ( Read(..), Lexeme(..), prec, lexP, lift, (+++) )
 import Text.ParserCombinators.ReadP ( string, skipSpaces, sepBy1 )
-import Text.Read.Lex ( Lexeme(..), expect )
 import GHC.Generics ( Generic )
 import Common ( liftFn )
 
@@ -21,20 +20,18 @@ type BagMap = M.HashMap Bag
 newtype Rule = Rule { getRule :: (Bag, BagMap Int) }
 instance Read Rule where
   readPrec = prec 0 $ do
-    mainBag <- readPrec; lift . expect $ Ident "contain"
-    bags <- readConts; lift . expect $ Symbol "."
-    pure $ Rule . (mainBag, ) . M.fromList $ bags
-    where
+    mainBag <- readPrec; Ident "contain" <- lexP
+    bags <- readConts; Symbol "." <- lexP
+    pure $ Rule . (mainBag, ) . M.fromList $ bags where
       readConts = lift (skipSpaces >> string "no other bags" >> pure [])
-        +++ liftFn (`sepBy1` string ",") (do n <- readPrec; (, n) <$> readPrec)
+        +++ liftFn (`sepBy1` string ",") (flip (,) <$> readPrec <*> readPrec)
 
 -- Laziness works like cache here
 unpacked :: BagMap (BagMap Int) -> BagMap (BagMap Int)
-unpacked bags = let
+unpacked bags = result where
   unpacked = M.mapWithKey (\bag num -> (* num) <$> result M.! bag)
   result = (`M.mapWithKey` bags) $ \this content ->
     foldr (M.unionWith (+)) (M.singleton this 1) $ unpacked content
-  in result
 
 sol1 :: [String] -> Int
 sol1 inp = let rules = M.fromList $ getRule . read <$> inp in

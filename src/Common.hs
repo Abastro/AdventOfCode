@@ -1,5 +1,5 @@
 module Common (
-  c2word, applyN, boolToMaybe, count, deintercalate, liftFn
+  c2word, inRange, applyN, boolToMaybe, count, deintercalate, liftFn
 ) where
 
 import Data.Char (ord)
@@ -12,6 +12,9 @@ import Text.ParserCombinators.ReadPrec ( ReadPrec, readP_to_Prec, readPrec_to_P 
 -- Unsafe stuff
 c2word :: Char -> Word8
 c2word = fromIntegral . ord
+
+inRange :: (Int, Int) -> Int -> Bool
+inRange (lb, ub) = (&&) <$> (>= lb) <*> (< ub)
 
 applyN :: Int -> (a -> a) -> a -> a
 applyN n f x = go n x where

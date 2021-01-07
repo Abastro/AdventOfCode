@@ -4,14 +4,10 @@ import Data.Word ( Word8 )
 import Data.List ( find )
 import Data.Maybe ( mapMaybe )
 import qualified Data.Vector.Unboxed as V
-import Common ( count, c2word )
+import Common ( count, c2word, inRange )
 
-data Frame = Frame { validX :: Int -> Bool, validY :: Int -> Bool
-  , encode :: Int -> Int -> Int, decodeX :: Int -> Int, decodeY :: Int -> Int }
-mkFrame :: [[a]] -> Frame
-mkFrame inp = Frame { validX = \x -> x >= 0 && x < width, validY = \y -> y >= 0 && y < height
-  , encode = \x y -> x + y * width, decodeX = (`mod` width), decodeY = (`div` width)
-} where width = length $ head inp; height = length inp
+encode :: Int -> Int -> Int -> Int
+encode width x y = x + y * width
 
 sol :: Int -> (Int -> [Int]) -> V.Vector Word8 -> Int
 sol acc nb seats = count (c2word '#') . V.toList . snd
@@ -24,14 +20,15 @@ sol acc nb seats = count (c2word '#') . V.toList . snd
 
 sol1 :: [[Char]] -> Int
 sol1 inp = sol 5 adj seats where
-  seats = V.fromList . fmap c2word . concat $ inp; fr = mkFrame inp
-  adj p = let i = decodeX fr p; j = decodeY fr p in
-    encode fr <$> filter (validX fr) [i-1, i, i+1] <*> filter (validY fr) [j-1, j, j+1]
+  seats = V.fromList . fmap c2word . concat $ inp
+  width = length $ head inp; height = length inp
+  adj p = let i = p `mod` width; j = p `div` width in
+    encode width <$> filter (inRange (0, width)) [i-1, i, i+1] <*> filter (inRange (0, height)) [j-1, j, j+1]
 
 sol2 :: [[Char]] -> Int
 sol2 inp = sol 6 adj seats where
-  seats = V.fromList . fmap c2word . concat $ inp; fr = mkFrame inp
+  seats = V.fromList . fmap c2word . concat $ inp
+  width = length $ head inp; height = length inp
   ranges f i = map (takeWhile f . tail) [iterate pred i, repeat i, iterate succ i]
-  adj p = let i = decodeX fr p; j = decodeY fr p in
-    mapMaybe (find ((/= c2word '.') . (seats V.!))) $ zipWith (encode fr)
-    <$> ranges (validX fr) i <*> ranges (validY fr) j
+  adj p = mapMaybe (find ((/= c2word '.') . (seats V.!))) $ zipWith (encode width)
+    <$> ranges (inRange (0, width)) (p `mod` width) <*> ranges (inRange (0, height)) (p `div` width)

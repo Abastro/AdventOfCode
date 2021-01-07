@@ -2,9 +2,8 @@ module Y2020.Prob16 ( sol1, sol2 ) where
 
 import Data.List ( isPrefixOf, sortBy, inits, tails, (\\), transpose )
 import Data.Function ( on, (&) )
-import Text.Read ( Read(..), lift, prec )
-import Text.Read.Lex ( Lexeme(..), expect )
-import Text.ParserCombinators.ReadP ( munch, char, sepBy )
+import Text.Read ( Read(..), Lexeme(..), lift, prec, lexP )
+import Text.ParserCombinators.ReadP ( munch, skipSpaces, string, sepBy )
 import Common ( deintercalate, liftFn )
 
 data Field = Field { name :: String, predicate :: Int -> Bool }
@@ -12,9 +11,9 @@ instance Eq Field where
   (==) = (==) `on` name
 instance Read Field where
   readPrec = prec 0 $ do
-    field <- lift $ munch (/= ':'); lift $ char ':'
-    preds <- liftFn (`sepBy` expect (Ident "or")) $ do
-      n <- readPrec; lift.expect $ Symbol "-"; m <- readPrec
+    field <- lift $ munch (/= ':'); lift $ string ":"
+    preds <- liftFn (`sepBy` (skipSpaces >> string "or")) $ do
+      n <- readPrec; Symbol "-" <- lexP; m <- readPrec
       pure $ \p -> p >= n && p <= m
     pure $ Field field $ \p -> any ($ p) preds
 

@@ -18,14 +18,13 @@ stepInstr ins (cur, acc) = case ins cur of
 terminate :: V.Vector Instr -> S.IntSet
 terminate ins = let
   backMapFor i = M.singleton (fst $ stepInstr (ins V.!) (i, 0)) [i]
-  backwards = M.unionsWith (<>) $ backMapFor <$> [0..V.length ins-1]
-  reachable = iterate $ \dest -> dest >>= fold . (M.!?) backwards
-  in S.fromList $ concat $ takeWhile (not . null) $ reachable [V.length ins]
+  backwards = M.unionsWith (<>) $ backMapFor <$> [0..pred $ V.length ins]
+  lookBack f dest = pure dest <> (fold ((M.!?) backwards dest) >>= f)
+  in S.fromList $ foldr (const lookBack) pure [0..] $ V.length ins
 
 sol1 :: [String] -> Int
 sol1 inp = sol S.empty (0, 0) where
-  sol known (i, j)
-    | i `S.member` known = j
+  sol known (i, j)  | i `S.member` known = j
     | otherwise = sol (S.insert i known) $ stepInstr (readInstr inp V.!) (i, j)
 
 sol2 :: [String] -> Int
@@ -33,7 +32,6 @@ sol2 inp = sol (0, 0) where
   ins = readInstr inp; termPos = terminate ins
   err (Jmp n) = Nop n; err (Nop n) = Jmp n; err i = i
   getRes = snd . until ((== length ins) . fst) (stepInstr (ins V.!))
-  sol p
-    | i' `S.member` termPos = getRes (i', j')
-    | otherwise = sol $ stepInstr (ins V.!) p
+  sol p | i' `S.member` termPos = getRes (i', j')
+        | otherwise = sol $ stepInstr (ins V.!) p
     where (i', j') = stepInstr (err . (ins V.!)) p

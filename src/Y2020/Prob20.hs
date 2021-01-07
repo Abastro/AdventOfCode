@@ -1,6 +1,5 @@
 module Y2020.Prob20 ( sol1, sol2 ) where
 
-import Control.Applicative ( Alternative(..) )
 import Control.Monad ( guard, foldM )
 import Data.Bits ( Bits(..) )
 import Data.Foldable ( traverse_ )
@@ -86,9 +85,7 @@ connectTiles tiles = let
 
 extendTiling :: M.IntMap TileConn -> Dir -> TileState -> [TileState]
 extendTiling conn dir (remain, tiling) = do
-  let m = maxOn dir tiling
-  let me = maxOn (E <> dir) tiling
-  let mw = maxOn (W <> dir) tiling
+  let m = maxOn dir tiling; me = maxOn (E <> dir) tiling; mw = maxOn (W <> dir) tiling
   let lessDir = if mw <= me then W else E
   new <- (`traverse` rangeMap mw me) $ \x -> do -- Gather possible tiles
     let (tile, ori) = tileOn dir x m tiling
@@ -116,7 +113,7 @@ findTiling mixed = head $ do
     let selected = fst $ M.findMin tileConn
     let init = M.singleton (pack 0 0) (selected, Orient U N) `Tiling` V.replicate 4 0
     let iRem = S.delete selected $ M.keysSet tileConn
-    let extend dir ext st = pure st <|> (extendTiling tileConn dir st >>= ext)
+    let extend dir ext st = pure st <> (extendTiling tileConn dir st >>= ext)
     let extendPoss dir = foldr extend pure $ repeat dir
     (rem, tiling) <- foldM (flip extendPoss) (iRem, init) [N, S, E, W]
     guard (S.null rem) >> pure tiling

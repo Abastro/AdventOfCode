@@ -1,11 +1,11 @@
 module Y2020.Prob21 ( sol1, sol2 ) where
 
+import Control.Monad ( guard )
 import Data.Function ( on )
 import Data.List ( sortBy, intercalate )
 import qualified Data.HashMap.Lazy as M
 import qualified Data.HashSet as S
-import Text.Read ( Read(..), Lexeme(..), lexP, parens, lift, (+++) )
-import Text.Read.Lex ( expect )
+import Text.Read ( Read(..), Lexeme(..), lexP, parens, (+++) )
 
 data Food = Food { ingreds :: S.HashSet String, allergens :: [String] } deriving Show
 instance Read Food where
@@ -13,10 +13,9 @@ instance Read Food where
     ingr <- readIdentList $ pure ()
     alg <- parens $ expectP (Ident "contains") >> readIdentList (expectP $ Punc ",")
     pure $ Food (S.fromList ingr) alg
-    where
-      expectP = lift . expect
-      readIdentList sep = do Ident x <- lexP; pure [x]
-        +++ do Ident x <- lexP; sep; (x :) <$> readIdentList sep
+    where expectP lexeme = do l <- lexP; guard $ l == lexeme
+          readIdentList sep = do Ident x <- lexP; pure [x]
+            +++ do Ident x <- lexP; sep; (x :) <$> readIdentList sep
 
 -- Gives map of allergen -> ingredients
 candidates :: [Food] -> M.HashMap String (S.HashSet String)

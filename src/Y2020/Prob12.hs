@@ -5,7 +5,7 @@ import Data.Foldable ( Foldable(..) )
 data Dir = N | E | S | W deriving (Enum, Show)
 data TDir = L | R deriving (Eq, Show)
 data Action = Move Dir Int | Turn TDir Int | Front Int
-data Pos = Pos { east :: Int, north :: Int }
+data Pos = Pos { east :: !Int, north :: !Int }
 addPos :: Pos -> Pos -> Pos
 addPos (Pos e n) (Pos e' n') = Pos (e + e') (n + n')
 multPos :: Int -> Pos -> Pos

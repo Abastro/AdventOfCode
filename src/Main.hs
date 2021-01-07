@@ -100,7 +100,7 @@ apps = M.fromList [
 
 runAll :: IO String
 runAll = "" <$ traverse printFor (M.toList $
-  foldr M.delete apps ["2020.15.1", "2020.15.11", "2020.23.1"]) where
+  foldr M.delete apps ["2020.15.1", "2020.23.1"]) where
     printFor (i, res) = putStrLn i >> res >>= putStrLn >> putStrLn ""
 
 main :: IO ()

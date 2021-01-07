@@ -8,24 +8,20 @@ import Common ( deintercalate )
 
 -- findInv n n' finds M: n'M = 1 (mod n) (*Coprime is checked)
 findInv :: Int -> Int -> Int
-findInv n n' = let
+findInv n n' = snd . fst $ curry exec (n', 1) (n, 0) where
   step (r,s) (r',s') = let q = r `div` r' in (r - q * r', s - q * s')
   exec = until ((== 0) . fst . snd) $ \(p, q) -> (q, step p q)
-  in snd . fst $ curry exec (n', 1) (n, 0)
 
 readInput :: [String] -> (Int, [Maybe Int])
 readInput [i, js] = (read i, map readMaybe $ deintercalate ',' js)
 
 sol1 :: [String] -> Int
-sol1 inp = let
+sol1 inp = uncurry (*) $ minimumBy (compare `on` fst) $ zip offset list where
   (start, list) = catMaybes <$> readInput inp
   offset = map ((-start) `mod`) list
-  in uncurry (*) $ minimumBy (compare `on` fst) $ zip offset list
 
 sol2 :: [String] -> Int
-sol2 inp = let
+sol2 inp = (`mod` total) . sum $ map part sch where
   sch = catMaybes $ zipWith (curry sequenceA) [0..] $ snd $ readInput inp
   total = product $ map snd sch
   part (r, n) = let n' = total `div` n in (-r) * n' * findInv n n'
-  in (`mod` total) . sum $ map part sch
-

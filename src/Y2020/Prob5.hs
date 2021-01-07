@@ -6,8 +6,7 @@ import qualified Data.IntSet as S
 seats :: [[Char]] -> [Int]
 seats = map $ digitInt (`elem` ['B', 'R']) where
   digitInt pred str = sum
-    $ zipWith (\i k -> if pred i then k else 0) (reverse str)
-    $ iterate (`shift` 1) 1
+    $ zipWith (\i k -> if pred i then k else 0) (reverse str) $ iterate (`shift` 1) 1
 
 sol1 :: [String] -> Int
 sol1 = maximum . seats

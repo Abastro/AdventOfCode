@@ -1,38 +1,35 @@
 module Y2020.Prob4 ( sol1, sol2 ) where
 
-import Data.Functor ( ($>) )
 import Control.Monad ( guard )
 import Data.Char ( isDigit )
 import Data.List ( (\\) )
 import Data.Maybe ( maybeToList )
-import Text.Read ( Read(..), readMaybe, prec, lexP, lift, (+++), pfail )
-import Text.Read.Lex ( Lexeme(..), expect )
+import Text.Read ( Read(..), Lexeme(..), readMaybe, prec, lexP, lift, (+++), pfail )
 import Text.ParserCombinators.ReadP ( count, satisfy )
 import Common ( deintercalate )
 
-data Height = CM Int | IN Int
+data Height = CM !Int | IN !Int
 newtype HairColor = HairColor String
 data EyeColor = Amb | Blu | Brn | Gry | Grn | Hzl | Oth
 newtype PassID = PassID String
 instance Read Height where
   readPrec = prec 0 $ do
     n <- readPrec
-    ((lift.expect $ Ident "cm") $> CM n) +++ ((lift.expect $ Ident "in") $> IN n)
+    (do Ident "cm" <- lexP; pure $ CM n) +++ (do Ident "in" <- lexP; pure $ IN n)
 instance Read HairColor where
   readPrec = prec 0 $ do
-    lift.expect $ Symbol "#"
-    fmap HairColor $ lift . count 6
-      $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
+    Symbol "#" <- lexP
+    fmap HairColor $ lift . count 6 $ satisfy (\c -> isDigit c || (c >= 'a' && c <= 'f'))
 instance Read EyeColor where
   readPrec = prec 0 $ do
-    Ident clr <- lexP; maybe pfail pure $ lookup clr eyeCl where
+    Ident clr <- lexP;  maybe pfail pure $ lookup clr eyeCl where
     eyeCl = [("amb", Amb), ("blu", Blu), ("brn", Brn), ("gry", Gry), ("grn", Grn), ("hzl", Hzl), ("oth", Oth)]
 instance Read PassID where
   readPrec = prec 0 $ fmap PassID . lift $ count 9 $ satisfy isDigit
 
 data Credential = Credential {
-  byr :: Int, iyr :: Int, eyr :: Int
-  , hgt :: Height, hcl :: HairColor, ecl :: EyeColor, pid :: PassID
+  byr :: !Int, iyr :: !Int, eyr :: !Int
+  , hgt :: !Height, hcl :: !HairColor, ecl :: !EyeColor, pid :: !PassID
 }
 
 readCred :: [String] -> [(String, String)]
