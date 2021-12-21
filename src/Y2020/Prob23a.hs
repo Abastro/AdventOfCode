@@ -1,4 +1,4 @@
-module Y2020.Prob23a ( sol1, sol2 ) where
+module Y2020.Prob23a ( solP23Fa, solP23Sa ) where
 
 import Control.Monad ( zipWithM_, foldM_ )
 import Control.Monad.ST ( runST )
@@ -19,15 +19,15 @@ simulate num start snxt = runST $ do
       nDest <- MV.read nxt dest
       v!4 <$ zipWithM_ (MV.write nxt) [cur, dest, v!3] [fromIntegral (v!4), fromIntegral (v!1), nDest]
 
-sol1 :: [Char] -> [Char]
-sol1 inp = let
+solP23Fa :: [Char] -> [Char]
+solP23Fa inp = let
   cups = pred . read . pure <$> inp  -- To begin with 0
   cupLink = V.replicate (length cups) 0 // zip cups (tail $ fromIntegral <$> cycle cups)
   resLink = simulate 100 (head cups) cupLink
   in concat $ show . succ <$> (tail . take (length cups) $ iterate ((resLink !) . fromIntegral) 0)
 
-sol2 :: [Char] -> Int
-sol2 inp = let
+solP23Sa :: [Char] -> Int
+solP23Sa inp = let
   len = 1000000; cups = pred . read . pure <$> inp
   cupLink = (V.generate len (fromIntegral . succ) //) $ fmap fromIntegral <$> (zip cups (tail cups)
     <> [(pred len, head cups), (last cups, length cups)])

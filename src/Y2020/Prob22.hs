@@ -1,4 +1,5 @@
-module Y2020.Prob22 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+module Y2020.Prob22 ( solP22F, solP22S ) where
 
 import Data.Hashable ( Hashable(..) )
 import Data.Word ( Word8 )
@@ -16,16 +17,15 @@ procWin :: Bool -> Deck -> Deck
 procWin fstWin (Deck v v') = let c = v!0; c' = v'!0; cs = V.drop 1 v; cs' = V.drop 1 v' in
   if fstWin then Deck (cs `V.snoc` c `V.snoc` c') cs' else Deck cs (cs' `V.snoc` c' `V.snoc` c)
 
-sol1 :: [String] -> Int
-sol1 inp = let
+solP22F :: [String] -> Int
+solP22F inp = let
     combat (Deck l l') = procWin (l!0 > l'!0) (Deck l l')
     [x, y] = V.fromList . fmap read . tail <$> deintercalate [] inp
     Deck res1 res2 = until (\(Deck p q) -> V.null p || V.null q) combat $ Deck x y
   in sum $ zipWith (*) [1..] $ reverse $ fromIntegral <$> V.toList (res1 <> res2)
 
--- TODO Optimize - possible?
-sol2 :: [String] -> Int
-sol2 inp = let
+solP22S :: [String] -> Int
+solP22S inp = let
     reCombat s deck@(Deck v v')
       | V.null v' = WinMark True v   | V.null v = WinMark False v'
       | deck `S.member` s = WinMark True (deckFst deck) -- Same cards same order -> Player 1 wins

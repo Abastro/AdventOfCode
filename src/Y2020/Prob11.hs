@@ -1,4 +1,4 @@
-module Y2020.Prob11 ( sol1, sol2 ) where
+module Y2020.Prob11 ( solP11F, solP11S ) where
 
 import Data.Word ( Word8 )
 import Data.List ( find )
@@ -18,15 +18,15 @@ sol acc nb seats = count (c2word '#') . V.toList . snd
              | u == c2word '#' = if c >= acc then c2word 'L' else c2word '#'
     next _ u = u
 
-sol1 :: [[Char]] -> Int
-sol1 inp = sol 5 adj seats where
+solP11F :: [[Char]] -> Int
+solP11F inp = sol 5 adj seats where
   seats = V.fromList . fmap c2word . concat $ inp
   width = length $ head inp; height = length inp
   adj p = let i = p `mod` width; j = p `div` width in
     encode width <$> filter (inRange (0, width)) [i-1, i, i+1] <*> filter (inRange (0, height)) [j-1, j, j+1]
 
-sol2 :: [[Char]] -> Int
-sol2 inp = sol 6 adj seats where
+solP11S :: [[Char]] -> Int
+solP11S inp = sol 6 adj seats where
   seats = V.fromList . fmap c2word . concat $ inp
   width = length $ head inp; height = length inp
   ranges f i = map (takeWhile f . tail) [iterate pred i, repeat i, iterate succ i]

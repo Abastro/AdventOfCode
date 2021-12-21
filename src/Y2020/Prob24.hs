@@ -1,4 +1,5 @@
-module Y2020.Prob24 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+module Y2020.Prob24 ( solP24F, solP24S ) where
 
 import Data.Hashable ( Hashable )
 import qualified Data.HashSet as S
@@ -25,11 +26,11 @@ blackTiles inp = S.fromMap . M.map (const ())
   $ M.filter ((== 1) . (`mod` 2))
   $ M.fromListWith (+) $ (`zip` repeat 1) $ mconcat . moveList <$> inp
 
-sol1 :: [String] -> Int
-sol1 = S.size . blackTiles
+solP24F :: [String] -> Int
+solP24F = S.size . blackTiles
 
-sol2 :: [String] -> Int
-sol2 inp = S.size $ applyN 100 stepTiles $ blackTiles inp where
+solP24S :: [String] -> Int
+solP24S inp = S.size $ applyN 100 stepTiles $ blackTiles inp where
   nbs = moveList $ "e"<>"se"<>"sw"<>"w"<>"nw"<>"ne"
   nMax f set = succ $ S.foldl' (flip $ max . f) minBound set
   nMin f set = pred $ S.foldl' (flip $ min . f) maxBound set

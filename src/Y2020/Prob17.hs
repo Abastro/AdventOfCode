@@ -1,4 +1,4 @@
-module Y2020.Prob17 ( sol ) where
+module Y2020.Prob17 ( solP17 ) where
 
 import Data.Int ( Int8 )
 import Data.Foldable ( Foldable(..) )
@@ -21,8 +21,8 @@ process dim st = filter next $ Pos <$> V.generateM dim (\i -> [nMin i..nMax i]) 
     | pos `S.member` set = (||) <$> (== 3) <*> (== 4) $ adjCnt pos -- One more from # itself
     | otherwise = (== 3) $ adjCnt pos
 
-sol :: Int -> [[Char]] -> Int
-sol dim inp = length $ applyN 6 (process dim) input where
+solP17 :: (Int, [[Char]]) -> Int
+solP17 (dim, inp) = length $ applyN 6 (process dim) input where
   input = do
     (i, line) <- zip [0..] inp; (j, '#') <- zip [0..] line
     pure . Pos $ V.replicate dim 0 V.// [(0, i), (1, j)]

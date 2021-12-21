@@ -1,4 +1,4 @@
-module Y2020.Prob18 ( sol1, sol2 ) where
+module Y2020.Prob18 ( solP18F, solP18S ) where
 
 import Text.Read ( Read(..), Lexeme(..), prec, step, parens, choice, lexP )
 
@@ -26,8 +26,8 @@ evaluate (Num n) = n
 evaluate (e :+: e') = evaluate e + evaluate e'
 evaluate (e :*: e') = evaluate e * evaluate e'
 
-sol1 :: [String] -> Int
-sol1 inp = sum $ evaluate . read <$> inp
+solP18F :: [String] -> Int
+solP18F inp = sum $ evaluate . read <$> inp
 
-sol2 :: [String] -> Int
-sol2 inp = sum $ evaluate . getExpr . read <$> inp
+solP18S :: [String] -> Int
+solP18S inp = sum $ evaluate . getExpr . read <$> inp

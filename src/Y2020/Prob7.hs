@@ -1,4 +1,4 @@
-module Y2020.Prob7 ( sol1, sol2 ) where
+module Y2020.Prob7 ( solP7F, solP7S ) where
 
 import Control.Monad ( guard )
 import Data.Hashable ( Hashable )
@@ -33,12 +33,12 @@ unpacked bags = result where
   result = (`M.mapWithKey` bags) $ \this content ->
     foldr (M.unionWith (+)) (M.singleton this 1) $ unpacked content
 
-sol1 :: [String] -> Int
-sol1 inp = let rules = M.fromList $ getRule . read <$> inp in
+solP7F :: [String] -> Int
+solP7F inp = let rules = M.fromList $ getRule . read <$> inp in
   subtract 1 $ (M.! Bag "shiny" "gold")
   $ foldr (M.unionWith (+)) M.empty
   $ M.map (const 1) . (unpacked rules M.!) <$> M.keys rules
 
-sol2 :: [String] -> Int
-sol2 inp = let rules = M.fromList $ getRule . read <$> inp in
+solP7S :: [String] -> Int
+solP7S inp = let rules = M.fromList $ getRule . read <$> inp in
   subtract 1 $ sum $ unpacked rules M.! Bag "shiny" "gold"

@@ -1,4 +1,5 @@
-module Y2020.Prob13 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+module Y2020.Prob13 ( solP13F, solP13S ) where
 
 import Data.Maybe ( catMaybes )
 import Data.Foldable ( minimumBy )
@@ -15,13 +16,13 @@ findInv n n' = snd . fst $ curry exec (n', 1) (n, 0) where
 readInput :: [String] -> (Int, [Maybe Int])
 readInput [i, js] = (read i, map readMaybe $ deintercalate ',' js)
 
-sol1 :: [String] -> Int
-sol1 inp = uncurry (*) $ minimumBy (compare `on` fst) $ zip offset list where
+solP13F :: [String] -> Int
+solP13F inp = uncurry (*) $ minimumBy (compare `on` fst) $ zip offset list where
   (start, list) = catMaybes <$> readInput inp
   offset = map ((-start) `mod`) list
 
-sol2 :: [String] -> Int
-sol2 inp = (`mod` total) . sum $ map part sch where
+solP13S :: [String] -> Int
+solP13S inp = (`mod` total) . sum $ map part sch where
   sch = catMaybes $ zipWith (curry sequenceA) [0..] $ snd $ readInput inp
   total = product $ map snd sch
   part (r, n) = let n' = total `div` n in (-r) * n' * findInv n n'

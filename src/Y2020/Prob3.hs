@@ -1,10 +1,13 @@
-module Y2020.Prob3 ( sol1, sol2 ) where
+module Y2020.Prob3 ( solP3F, solP3S ) where
 
-sol1 :: Int -> Int -> [[Char]] -> Int
-sol1 moveX moveY inp = length . filter (== '#')
+sol :: Int -> Int -> [[Char]] -> Int
+sol moveX moveY inp = length . filter (== '#')
   $ zipWith (!!) sparse $ map ((`mod` width) . (* moveX)) [0..] where
     width = length $ head inp
     sparse = map snd . filter ((== 0) . (`mod` moveY) . fst) $ zip [0..] inp
 
-sol2 :: [[Char]] -> Int
-sol2 = product . ([sol1 1 1, sol1 3 1, sol1 5 1, sol1 7 1, sol1 1 2] <*>) . pure
+solP3F :: [[Char]] -> Int
+solP3F = sol 3 1
+
+solP3S :: [[Char]] -> Int
+solP3S = product . ([sol 1 1, sol 3 1, sol 5 1, sol 7 1, sol 1 2] <*>) . pure

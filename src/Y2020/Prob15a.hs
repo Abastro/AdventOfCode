@@ -1,4 +1,4 @@
-module Y2020.Prob15a ( sol ) where
+module Y2020.Prob15a ( solP15a ) where
 
 import Control.Monad ( zipWithM_, foldM )
 import Control.Monad.ST ( ST, runST )
@@ -13,8 +13,8 @@ grow k vec = if k < l then pure vec else do
   MV.slice l l vec' `MV.set` maxBound
   grow k vec'   where l = MV.length vec
 
-sol :: Int -> String -> Int
-sol ind inp = runST $ do
+solP15a :: (Int, String) -> Int
+solP15a (ind, inp) = runST $ do
   let nums = read <$> deintercalate ',' inp
   v <- MV.replicate (maximum nums) maxBound
   zipWithM_ (MV.write v) (init nums) [1..]

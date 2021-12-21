@@ -1,4 +1,5 @@
-module Y2020.Prob4 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+module Y2020.Prob4 ( solP4F, solP4S ) where
 
 import Control.Monad ( guard )
 import Data.Char ( isDigit )
@@ -35,13 +36,13 @@ data Credential = Credential {
 readCred :: [String] -> [(String, String)]
 readCred cr = map (fmap tail . span (/= ':')) $ concat $ words <$> cr
 
-sol1 :: [String] -> Int
-sol1 inp = length $ do
+solP4F :: [String] -> Int
+solP4F inp = length $ do
   cred <- readCred <$> deintercalate [] inp
   guard $ null (["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"] \\ map fst cred)
 
-sol2 :: [String] -> Int
-sol2 inp = length $ do
+solP4S :: [String] -> Int
+solP4S inp = length $ do
   cred <- readCred <$> deintercalate [] inp
   let readField i = lookup i cred >>= readMaybe
   credent <- maybeToList $ Credential

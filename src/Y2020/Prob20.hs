@@ -1,4 +1,4 @@
-module Y2020.Prob20 ( sol1, sol2 ) where
+module Y2020.Prob20 ( solP20F, solP20S ) where
 
 import Control.Monad ( guard, foldM )
 import Data.Bits ( Bits(..) )
@@ -123,13 +123,13 @@ readTiles inp = do
   (header : tile) <- deintercalate [] inp
   pure (read . init $ drop 5 header, tile)
 
-sol1 :: [String] -> Int
-sol1 inp = let found = findTiling $ readTiles inp in
+solP20F :: [String] -> Int
+solP20F inp = let found = findTiling $ readTiles inp in
   product $ fst <$> (tileAt <$> [maxOn W found, maxOn E found]
     <*> [maxOn S found, maxOn N found] <*> [found])
 
-sol2 :: [String] -> Int
-sol2 inp = (S.size sharps -) . (* count '#' (concat seaMonster)) . head . filter (> 0) $ do
+solP20S :: [String] -> Int
+solP20S inp = (S.size sharps -) . (* count '#' (concat seaMonster)) . head . filter (> 0) $ do
     ori <- Orient <$> [U, D] <*> [N, W, S, E]
     pure . length $ do
       ip <- imgIndices

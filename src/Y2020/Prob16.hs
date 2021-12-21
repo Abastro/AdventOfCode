@@ -1,4 +1,4 @@
-module Y2020.Prob16 ( sol1, sol2 ) where
+module Y2020.Prob16 ( solP16F, solP16S ) where
 
 import Data.List
 import Data.Function ( on, (&) )
@@ -23,12 +23,12 @@ interpret inp = let
   in (read <$> fields, read <$> deintercalate ',' your,
     map read . deintercalate ',' <$> nearby)
 
-sol1 :: [String] -> Int
-sol1 inp = let (fields, _, nearby) = interpret inp in
+solP16F :: [String] -> Int
+solP16F inp = let (fields, _, nearby) = interpret inp in
   sum $ sum . filter (\i -> not $ any (($ i) . predicate) fields) <$> nearby
 
-sol2 :: [String] -> Int
-sol2 inp = let
+solP16S :: [String] -> Int
+solP16S inp = let
   (fields, your, nearby) = interpret inp
   valid = filter (all $ \i -> any (($ i) . predicate) fields) nearby
   fieldFor vals = filter (\f -> all (predicate f) vals) fields

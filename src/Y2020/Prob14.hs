@@ -1,4 +1,4 @@
-module Y2020.Prob14 ( sol1, sol2 ) where
+module Y2020.Prob14 ( solP14F, solP14S ) where
 
 import Data.Foldable ( Foldable(..) )
 import Data.Bits ( Bits(..) )
@@ -26,8 +26,8 @@ instance Read Instr where
 data ProgState a = ProgState {
   mask0 :: a, mask1 :: Int, memory :: M.IntMap Int }
 
-sol1 :: [String] -> Int
-sol1 inp = sum . M.elems . memory
+solP14F :: [String] -> Int
+solP14F inp = sum . M.elems . memory
   $ foldl' perform ProgState{ mask0 = 0, mask1 = 0, memory = M.empty }
   $ read <$> inp where
     perform st (Mask mask) = st{ mask0 = zeros, mask1 = ones } where
@@ -37,8 +37,8 @@ sol1 inp = sum . M.elems . memory
     perform st (Mem pos n) =
       st{ memory = M.insert pos ((n .&. mask0 st) .|. mask1 st) $ memory st }
 
-sol2 :: [String] -> Int
-sol2 inp = sum . M.elems . memory
+solP14S :: [String] -> Int
+solP14S inp = sum . M.elems . memory
   $ foldl' perform ProgState{ mask0 = [], mask1 = 0, memory = M.empty }
   $ read <$> inp where
     perform st (Mask mask) = st{ mask0 = flots, mask1 = ones } where

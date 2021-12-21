@@ -1,4 +1,4 @@
-module Y2020.Prob23 ( sol1, sol2 ) where
+module Y2020.Prob23 ( solP23F, solP23S ) where
 
 import qualified Data.IntSet as S
 import qualified Data.IntMap.Strict as M
@@ -13,15 +13,15 @@ simulate num start snxt = snd $ applyN num step (start, snxt) where
     in cur `seq` (next, foldr (uncurry M.insert) nxt
       [(cur, next), (dest, head sel), (last sel, nxt M.! dest)])
 
-sol1 :: [Char] -> [Char]
-sol1 inp = let
+solP23F :: [Char] -> [Char]
+solP23F inp = let
   cups = pred . read . pure <$> inp  -- To begin with 0
   cupLink = M.fromList $ zip cups (tail $ cycle cups)
   resLink = simulate 100 (head cups) cupLink
   in concat $ show . succ <$> (tail . take (length cups) $ iterate (resLink M.!) 0)
 
-sol2 :: [Char] -> Int
-sol2 inp = let
+solP23S :: [Char] -> Int
+solP23S inp = let
   len = 1000000; cups = pred . read . pure <$> inp
   cupLink = M.unions [M.fromList $ zip cups (tail cups)
     , M.fromList [(pred len, head cups), (last cups, length cups)]

@@ -1,9 +1,9 @@
-module Y2020.Prob2 ( sol1, sol2 ) where
+module Y2020.Prob2 ( solP2F, solP2S ) where
 
 import Control.Monad ( guard )
 import Data.Function ( on )
 import Text.Read
-import Common ( count )
+import Common
 
 data PassScheme = PassScheme Int Int Char String
 instance Read PassScheme where
@@ -12,10 +12,10 @@ instance Read PassScheme where
     Ident k <- lexP; Symbol ":" <- lexP; Ident pw <- lexP
     pure $ PassScheme low high (head k) pw
 
-sol1 :: [String] -> Int
-sol1 list = length $ do PassScheme low high key pw <- read <$> list
-                        guard (count key pw >= low && count key pw <= high)
+solP2F :: [String] -> Int
+solP2F list = length $ do PassScheme low high key pw <- read <$> list
+                          guard (count key pw >= low && count key pw <= high)
 
-sol2 :: [String] -> Int
-sol2 list = length $ do PassScheme low high key pw <- read <$> list
-                        guard $ ((/=) `on` (== key)) (pw !! (low-1)) (pw !! (high-1))
+solP2S :: [String] -> Int
+solP2S list = length $ do PassScheme low high key pw <- read <$> list
+                          guard $ ((/=) `on` (== key)) (pw !! (low-1)) (pw !! (high-1))

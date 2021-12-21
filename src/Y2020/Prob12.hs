@@ -1,4 +1,5 @@
-module Y2020.Prob12 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+module Y2020.Prob12 ( solP12F, solP12S ) where
 
 import Data.Foldable ( Foldable(..) )
 
@@ -20,20 +21,20 @@ rotate :: Dir -> Pos -> Pos
 rotate N p = p;                  rotate S (Pos x y) = Pos (-x) (-y)
 rotate E (Pos x y) = Pos y (-x); rotate W (Pos x y) = Pos (-y) x
 
-readAct :: String -> Action
+readAct :: [Char] -> Action
 readAct (c:str) = act c $ read str where
   act 'N' = Move N; act 'E' = Move E; act 'S' = Move S; act 'W' = Move W
   act 'L' = Turn L . (`div` 90); act 'R' = Turn R . (`div` 90); act 'F' = Front
 
-sol1 :: [String] -> Int
-sol1 inp = abs (east $ snd dest) + abs (north $ snd dest) where
+solP12F :: [String] -> Int
+solP12F inp = abs (east $ snd dest) + abs (north $ snd dest) where
   dest = foldl' (flip $ action . readAct) (E, Pos 0 0) inp
   action (Move dir n) (curDir, curPos) = (curDir, move n dir `addPos` curPos)
   action (Turn td n) (curDir, curPos) = (turn n td curDir, curPos)
   action (Front n) (curDir, curPos) = (curDir, move n curDir `addPos` curPos)
 
-sol2 :: [String] -> Int
-sol2 inp = abs (east $ snd dest) + abs (north $ snd dest) where
+solP12S :: [String] -> Int
+solP12S inp = abs (east $ snd dest) + abs (north $ snd dest) where
   dest = foldl' (flip $ action . readAct) (Pos 10 1, Pos 0 0) inp
   action (Move dir n) (wayPos, curPos) = (move n dir `addPos` wayPos, curPos)
   action (Turn td n) (wayPos, curPos) = (rotate (turn n td N) wayPos, curPos)

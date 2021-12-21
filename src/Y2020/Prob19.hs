@@ -1,4 +1,4 @@
-module Y2020.Prob19 ( sol1, sol2 ) where
+module Y2020.Prob19 ( solP19F, solP19S ) where
 
 import Data.List ( isPrefixOf )
 import qualified Data.IntMap as M
@@ -26,10 +26,10 @@ withRule rules (Refer i) = withRule rules (rules M.! i)
 withRule rules (r ::: r') = withRule rules r >> withRule rules r'
 withRule rules (r :|: r') = withRule rules r RP.+++ withRule rules r'
 
-sol1 :: [String] -> Int
-sol1 inp = let (rules, inps) = readInput inp in length $ do
+solP19F :: [String] -> Int
+solP19F inp = let (rules, inps) = readInput inp in length $ do
   (a, "") <- inps >>= RP.readP_to_S (withRule rules (rules M.! 0)); pure a
 
-sol2 :: [String] -> Int
-sol2 inp = sol1 $ ["8: 42 | 42 8", "11: 42 31 | 42 11 31"]
+solP19S :: [String] -> Int
+solP19S inp = solP19F $ ["8: 42 | 42 8", "11: 42 31 | 42 11 31"]
   <> filter (\l -> not $ isPrefixOf "8:" l || isPrefixOf "11:" l) inp

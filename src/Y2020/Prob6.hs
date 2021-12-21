@@ -1,12 +1,12 @@
-module Y2020.Prob6 ( sol1, sol2 ) where
+module Y2020.Prob6 ( solP6F, solP6S ) where
 
 import Data.Char ( ord )
 import qualified Data.IntSet as S
 import Common ( deintercalate )
 
-sol1 :: [String] -> Int
-sol1 = sum . map (S.size . S.unions . map (S.fromList . map ord)) . deintercalate []
+solP6F :: [String] -> Int
+solP6F = sum . map (S.size . S.unions . map (S.fromList . map ord)) . deintercalate []
 
-sol2 :: [String] -> Int
-sol2 = sum . map (S.size . foldr1 S.intersection . map (S.fromList . map ord)) . deintercalate []
+solP6S :: [String] -> Int
+solP6S = sum . map (S.size . foldr1 S.intersection . map (S.fromList . map ord)) . deintercalate []
 

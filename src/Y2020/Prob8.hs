@@ -1,4 +1,5 @@
-module Y2020.Prob8 ( sol1, sol2 ) where
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+module Y2020.Prob8 ( solP8F, solP8S ) where
 
 import Data.Foldable ( Foldable(..) )
 import qualified Data.Vector as V
@@ -22,13 +23,13 @@ terminate ins = let
   lookBack f dest = pure dest <> (fold ((M.!?) backwards dest) >>= f)
   in S.fromList $ foldr (const lookBack) pure [0..] $ V.length ins
 
-sol1 :: [String] -> Int
-sol1 inp = sol S.empty (0, 0) where
+solP8F :: [String] -> Int
+solP8F inp = sol S.empty (0, 0) where
   sol known (i, j)  | i `S.member` known = j
     | otherwise = sol (S.insert i known) $ stepInstr (readInstr inp V.!) (i, j)
 
-sol2 :: [String] -> Int
-sol2 inp = sol (0, 0) where
+solP8S :: [String] -> Int
+solP8S inp = sol (0, 0) where
   ins = readInstr inp; termPos = terminate ins
   err (Jmp n) = Nop n; err (Nop n) = Jmp n; err i = i
   getRes = snd . until ((== length ins) . fst) (stepInstr (ins V.!))
