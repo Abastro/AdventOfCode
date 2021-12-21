@@ -46,7 +46,7 @@ executable AdventOfCode
       Y2020.Prob24
       Y2020.Prob25
   build-depends:
-      base >=4.13 && <4.14
+      base >=4.13 && <5
     -- 0.6.2 unusable due to bugs in container
     , containers >=0.6.3 && <0.7
     , hashable ==1.3.*

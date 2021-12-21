@@ -1,10 +1,10 @@
 module Y2020.Prob16 ( sol1, sol2 ) where
 
-import Data.List ( isPrefixOf, sortBy, inits, tails, (\\), transpose )
+import Data.List
 import Data.Function ( on, (&) )
-import Text.Read ( Read(..), Lexeme(..), lift, prec, lexP )
-import Text.ParserCombinators.ReadP ( munch, skipSpaces, string, sepBy )
-import Common ( deintercalate, liftFn )
+import Text.Read
+import Text.ParserCombinators.ReadP
+import Common
 
 data Field = Field { name :: String, predicate :: Int -> Bool }
 instance Eq Field where

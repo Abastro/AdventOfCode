@@ -2,7 +2,7 @@ module Y2020.Prob2 ( sol1, sol2 ) where
 
 import Control.Monad ( guard )
 import Data.Function ( on )
-import Text.Read ( Read(..), Lexeme(..), lexP, prec )
+import Text.Read
 import Common ( count )
 
 data PassScheme = PassScheme Int Int Char String

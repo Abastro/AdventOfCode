@@ -4,7 +4,7 @@ import Control.Monad ( guard )
 import Data.Char ( isDigit )
 import Data.List ( (\\) )
 import Data.Maybe ( maybeToList )
-import Text.Read ( Read(..), Lexeme(..), readMaybe, prec, lexP, lift, (+++), pfail )
+import Text.Read
 import Text.ParserCombinators.ReadP ( count, satisfy )
 import Common ( deintercalate )
 

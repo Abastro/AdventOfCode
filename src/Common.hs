@@ -7,7 +7,7 @@ import Data.Word (Word8)
 import Data.List (groupBy)
 import Data.Function (on)
 import Text.ParserCombinators.ReadP (ReadP)
-import Text.ParserCombinators.ReadPrec ( ReadPrec, readP_to_Prec, readPrec_to_P )
+import Text.ParserCombinators.ReadPrec
 
 -- Unsafe stuff
 c2word :: Char -> Word8
