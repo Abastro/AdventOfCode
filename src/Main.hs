@@ -10,9 +10,10 @@ import           Text.Printf
 import           Text.Read
 
 import qualified Y2020.Y2020                   as Y2020
+import qualified Y2021.Y2021                   as Y2021
 
 apps :: M.Map String (M.Map ProbN SealPS)
-apps = M.fromList [(Y2020.yr, Y2020.psols)]
+apps = M.fromList [(Y2020.yr, Y2020.psols), (Y2021.yr, Y2021.psols)]
 
 main :: IO ()
 main = do
@@ -40,4 +41,4 @@ main = do
     let exp = expAns prob
     if exp == res
       then printf "Matches: %s\n" (show res)
-      else printf "Expected: %s, Actual: %s" (show exp) (show res)
+      else printf "Expected: %s, Actual: %s\n" (show exp) (show res)
