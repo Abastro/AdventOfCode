@@ -44,6 +44,13 @@ executable AdventOfCode
       Y2021.Prob01
       Y2021.Prob02
       Y2021.Prob03
+      Y2021.Prob04
+      Y2021.Prob05
+      Y2021.Prob06
+      Y2021.Prob07
+      Y2021.Prob08
+      Y2021.Prob09
+      Y2021.Prob10
       Y2021.Y2021
 
   build-depends:
