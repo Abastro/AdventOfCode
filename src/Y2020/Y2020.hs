@@ -2,8 +2,8 @@ module Y2020.Y2020
   ( yr
   , psols
   ) where
-import           Common
 import qualified Data.Map                      as M
+import           ProbSol
 
 import           Y2020.Prob1
 import           Y2020.Prob10

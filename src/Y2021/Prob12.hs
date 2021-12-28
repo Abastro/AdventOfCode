@@ -1,5 +1,6 @@
 module Y2021.Prob12 ( sol12 ) where
 import Common
+import ProbSol
 import Text.Read
 import Data.Char
 import Data.Maybe

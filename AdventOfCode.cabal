@@ -11,6 +11,7 @@ executable AdventOfCode
   main-is:             Main.hs
   other-modules:
       Common
+      ProbSol
 
       Y2020.Prob1
       Y2020.Prob2

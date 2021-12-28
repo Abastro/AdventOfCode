@@ -1,9 +1,9 @@
 module Main where
 
-import           Common
 import           Control.Monad
 import           Data.Foldable
 import qualified Data.Map                      as M
+import           ProbSol
 import           System.IO
 import           System.TimeIt                  ( timeIt )
 import           Text.Printf
