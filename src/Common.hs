@@ -55,7 +55,10 @@ deintercalate p = filter (/= [p]) . groupBy ((==) `on` (== p))
 liftFn :: (ReadP a -> ReadP b) -> (ReadPrec a -> ReadPrec b)
 liftFn f = readP_to_Prec . (f .) . readPrec_to_P
 
+-- TODO EnumMaps, 2D/3D maps
 
+
+-- TODO Isolate the problem class
 data ProbClass = Fst | Snd
   deriving (Eq, Ord, Show, Read)
 data ProbN = ProbN !Int !ProbClass
