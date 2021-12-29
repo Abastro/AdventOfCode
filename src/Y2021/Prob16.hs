@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Y2021.Prob16 ( sol16F, sol16S ) where
-import Data.Tuple
-import Data.List
+import Common
+import Data.Char
+import Data.Bits
 import Control.Monad.RWS
 
 data Bit = O | I deriving (Eq, Enum, Show)
-toBits l = fmap (toEnum @Bit) . reverse . take l . unfoldr (\n -> Just $ swap (n `divMod` 2))
-fromBits = foldl' @[] (\n b -> n * 2 + b) 0 . fmap (fromEnum @Bit)
-hexToBit s = [b | c <- s, c /= '\n', b <- toBits 4 . read @Int $ "0x" <> [c]]
+fromBits = fromDigit 2 . fmap (fromEnum @Bit)
+hexToBit s = [if testBit (digitToInt c) p then I else O | c <- s, c /= '\n', p <- [3, 2, 1, 0]]
 
 type ReadBits = RWS () (Sum Int) [Bit]
 readN n = tell (Sum n) *> state (splitAt n)

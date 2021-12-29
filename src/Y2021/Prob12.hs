@@ -21,7 +21,7 @@ mkGraph conns = (vToI M.! "start", (V.fromList allVs, graphs)) where
   edges = [(vToI M.! v, vToI M.! w) | Conn v w <- conns] >>= (\(p, q) -> [(p, q), (q, p)])
   graphs = V.accum (flip (:)) (V.replicate (M.size vToI) []) edges
 
-nPathFrom :: ProbClass -> (V.Vector String, V.Vector [Int]) -> (IS.IntSet, Maybe Int, Int) -> Int -- TODO Would memoization help?
+nPathFrom :: ProbClass -> (V.Vector String, V.Vector [Int]) -> (IS.IntSet, Maybe Int, Int) -> Int
 nPathFrom cl (label, graph) (visited, twice, vert) = lastPath $ sum (pFrom <$> nexts) where 
   lastPath i = if label V.! vert == "end" then 1 else i -- Exit immediately after endpt
   visited' = if all isLower (label V.! vert) then IS.insert vert visited else visited

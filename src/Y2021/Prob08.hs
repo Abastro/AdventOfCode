@@ -17,7 +17,7 @@ sol8F :: [String] -> Int
 sol8F l = count 2 outs + count 4 outs + count 3 outs + count 7 outs where -- 1, 4, 7, 8
   outs = [popCount w | Display _ o <- read <$> l, w <- UV.toList o]
 
-sol8S :: [String] -> Int -- TODO: Cleanup (Or better solution)
+sol8S :: [String] -> Int -- MAYBE: Cleanup (Or better solution)
 sol8S l = sum $ go . read <$> l where
   go disp = num $ (ws IM.!) <$> UV.toList (outp disp) where
     num = foldl' (\n d -> n * 10 + d) 0

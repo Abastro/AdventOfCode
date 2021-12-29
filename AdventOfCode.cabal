@@ -78,6 +78,7 @@ executable AdventOfCode
     , vector ==0.12.*
     , transformers ==0.5.*
     , mtl ==2.2.*
+    , pqueue== 1.4.*
     -- Just to simply measure some time (Benchmark does not make sense)
     , timeit ==2.*
   hs-source-dirs:      src/

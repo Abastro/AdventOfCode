@@ -11,7 +11,8 @@ ruleMap rs = IM.fromList [(encode a b, (encode a c, encode c b)) | [a, b, ' ', '
 
 sol14 :: (Int, [String]) -> Int
 sol14 (n, l) = maximum occList - minimum occList where
-  ini : _ : rs = l; rules = ruleMap rs;   hd = head ini; ls = last ini
+  ini : _ : rs = l; rules = ruleMap rs;
+  hd = head ini; ls = last ini
   pairOcc = IM.fromListWith (+) $ (, 1) <$> zipWith encode ini (tail ini)
   next occurs = IM.fromListWith (+) newOcc where
     newOcc = [(r, occ) | (pair, occ) <- IM.toList occurs, r <- maybe [pair] pairList (rules IM.!? pair)]
