@@ -64,6 +64,7 @@ executable AdventOfCode
       Y2021.Prob20
       Y2021.Prob21
       Y2021.Prob22
+      Y2021.Prob22b
       Y2021.Prob23
       Y2021.Prob24
       Y2021.Prob25
@@ -78,7 +79,7 @@ executable AdventOfCode
     , vector ==0.12.*
     , transformers ==0.5.*
     , mtl ==2.2.*
-    , pqueue== 1.4.*
+    , multiset== 0.3.*
     -- Just to simply measure some time (Benchmark does not make sense)
     , timeit ==2.*
   hs-source-dirs:      src/

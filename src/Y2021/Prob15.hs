@@ -1,42 +1,44 @@
 module Y2021.Prob15 ( sol15F, sol15S ) where
 import Common
 import Data.Char
+import Data.Word
 import Data.List
 import qualified Data.Vector.Unboxed as UV
 import qualified Data.Vector.Unboxed.Mutable as MV
-import qualified Data.PQueue.Prio.Min as P
+import qualified Data.Set as S
 import Control.Monad
 import Control.Monad.ST
 
-mkRisks :: [[Char]] -> Framed UV.Vector Int
-mkRisks l = mkFramed $ map digitToInt <$> l
+mkRisks :: [[Char]] -> Framed UV.Vector Word8
+mkRisks l = mkFramed $ map (fromIntegral . digitToInt) <$> l
 nbs frame i = [frameIdx frame v | v <- [Vec2 (pred x) y, Vec2 (succ x) y, Vec2 x (pred y), Vec2 x (succ y)], inFrame frame v]
-  where Vec2 x y = fromIdx frame i
+  where Vec2 x y = fromIdx frame i -- TODO Optimize
+data WRisk = WRisk !Word16 !Int deriving (Eq, Ord)
 
-riskTo :: Framed UV.Vector Int -> MV.MVector s Int -> MV.MVector s Bool -> P.MinPQueue Int Int -> (Int, Int) -> ST s ()
+riskTo :: Framed UV.Vector Word8 -> MV.MVector s Word16 -> MV.MVector s Bool -> S.Set WRisk -> (Word16, Int) -> ST s ()
 riskTo rmap risk unvisit toVisit (curRisk, cur) = do
   let fr = frame rmap
   nexts <- filterM (MV.read unvisit) $ nbs fr cur
   MV.write unvisit cur False
-  let modRisk i = do MV.modify risk (min $ curRisk + umap rmap UV.! i) i
-                     (, i) <$> MV.read risk i
+  let modRisk i = do MV.modify risk (min $ curRisk + fromIntegral (umap rmap UV.! i)) i
+                     (`WRisk` i) <$> MV.read risk i
   nextRes <- traverse modRisk nexts
-  let toVisit' = foldl' (flip $ uncurry P.insert) toVisit nextRes
-  let handleMin pq = case P.minViewWithKey pq of
+  let toVisit' = foldl' (flip S.insert) toVisit nextRes
+  let handleMin pq = case S.minView pq of
         Nothing -> pure ()
-        Just ((minP, minV), rem) -> do
+        Just (WRisk minP minV, rem) -> do
           unvis <- MV.read unvisit minV
           if not unvis then handleMin rem
           else riskTo rmap risk unvisit rem (minP, minV)
   handleMin toVisit'
 
-getRisk :: Framed UV.Vector Int -> Int
+getRisk :: Framed UV.Vector Word8 -> Int
 getRisk rmap = runST $ do
   let l = UV.length $ umap rmap
-  risk <- MV.replicate l (maxBound @Int)
+  risk <- MV.replicate l (maxBound @Word16)
   unvisit <- MV.replicate l True
-  riskTo rmap risk unvisit P.empty (0, 0)
-  MV.read risk $ pred l
+  riskTo rmap risk unvisit mempty (0, 0)
+  fmap fromIntegral $ MV.read risk $ pred l
 
 sol15F :: [String] -> Int
 sol15F l = getRisk $ mkRisks l

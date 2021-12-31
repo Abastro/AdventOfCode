@@ -63,6 +63,7 @@ liftFn f = readP_to_Prec . (f .) . readPrec_to_P
 
 fromDigit :: Int -> [Int] -> Int
 fromDigit base = foldl' (\n d -> n * base + d) 0
+{-# INLINE fromDigit #-}
 
 data Vec2 a = Vec2
   { px :: !a
@@ -124,16 +125,20 @@ framedThaw (Framed frame m) = Framed frame <$> V.thaw m
 
 inFrame :: Frame -> Vec2 Int -> Bool
 inFrame (Frame w h) (Vec2 x y) = x >= 0 && x < w && y >= 0 && y < h
+{-# INLINE inFrame #-}
 
 frameIdx :: Frame -> Vec2 Int -> Int
 frameIdx (Frame w _) (Vec2 x y) = x + y * w
+{-# INLINE frameIdx #-}
 
 fromIdx :: Frame -> Int -> Vec2 Int
 fromIdx (Frame w _) n = let (q, r) = n `divMod` w in Vec2 r q
+{-# INLINE fromIdx #-}
 
 -- |NOTE: Bound is not checked
 getAt :: V.Vector v a => Framed v a -> Vec2 Int -> a
 getAt (Framed frame m) p = m V.! frameIdx frame p
+{-# INLINE getAt #-}
 
 frameCrds :: Frame -> [Vec2 Int]
 frameCrds (Frame w h) = [ Vec2 i j | j <- [0 .. pred h], i <- [0 .. pred w] ]

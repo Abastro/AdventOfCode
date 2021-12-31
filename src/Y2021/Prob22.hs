@@ -1,46 +1,39 @@
 module Y2021.Prob22 ( sol22F, sol22S ) where
 import Common
 import Data.Char
-import Data.Foldable
-import qualified Data.IntSet as IS
-import qualified Data.IntMap as IM
-import qualified Data.Vector as V
+import Data.List
+import qualified Data.MultiSet as MS
 
-data Cmd = Cmd !Bool !(Vec3 Int) !(Vec3 Int) deriving Show -- TODO Optimize & Reduce code (many duplicates)
+data Interval a = Interval !a !a deriving (Eq, Ord, Show) -- Interval [a, b]
+instance Ord a => Semigroup (Interval a) where -- Provide intersection
+  Interval a b <> Interval a' b' = Interval (max a a') (min b b')
+
+nonEmpty int@(Interval a b) = int <$ boolToMaybe (a <= b)
+sizeInter (Interval a b) = b - a + 1
+
+type Cuboid = Vec3 (Interval Int)
+data Cmd = Cmd !Bool !Cuboid deriving Show
 readCmd :: String -> Cmd -- Repr. region p1 <= X < p2
-readCmd s = Cmd (flag == "on") (Vec3 x1 y1 z1) (Vec3 (succ x2) (succ y2) (succ z2)) where
-  [flag, cuboid] = words s
-  [x1, x2, y1, y2, z1, z2] = map (read @Int) . words $ map filt cuboid
+readCmd s = Cmd (flag == "on") (readI <$> Vec3 ix iy iz) where
+  [flag, cuboid] = words s; [ix, iy, iz] = deintercalate ',' cuboid
+  readI str = let [a, b] = map read .  words $ map filt str in Interval a b
   filt c = if isDigit c || c == '-' then c else ' '
 
-mkBimap cmds coord = (cmap, cvec) where
-  crds = IS.toAscList $ IS.fromList [coord p | Cmd _ p1 p2 <- cmds, p <- [p1, p2]]
-  cmap = IM.fromList $ zip crds [0..]; cvec = V.fromList crds
+-- |Runs CMD to apply to addition/subtraction sets (CSG, I believe)
+runCmd :: Cmd -> (MS.MultiSet Cuboid, MS.MultiSet Cuboid) -> (MS.MultiSet Cuboid, MS.MultiSet Cuboid)
+runCmd (Cmd flag cuboid) (adds, subs) = rmEqual $ if flag then (MS.insert cuboid adds', subs') else (adds', subs')
+  where
+    rmEqual (a, s) = let eq = MS.intersection a s in (a MS.\\ eq, s MS.\\ eq)
+    intWAdd = MS.mapMaybe (traverse nonEmpty . (cuboid <>)) adds;  adds' = MS.union intWSub adds
+    intWSub = MS.mapMaybe (traverse nonEmpty . (cuboid <>)) subs;  subs' = MS.union intWAdd subs
 
--- |For specific i,j
-lenZ :: V.Vector Cmd -> [Int] -> Int
-lenZ cmds idxs = sum . map lenZOf . IS.toList $ foldl' calc IS.empty cs where
-  cs = [cmds V.! t | t <- idxs]; (mZ, vZ) = mkBimap cs sz
-  segZ (Cmd _ p1 p2) = [mZ IM.! sz p1 .. pred $ mZ IM.! sz p2]
-  lenZOf k = vZ V.! succ k - vZ V.! k
-  calc ons cmd@(Cmd flag _ _) = foldl' (flip $ if flag then IS.insert else IS.delete) ons $ segZ cmd
--- |For specific i
-areaYZ :: V.Vector Cmd -> [Int] -> Int
-areaYZ cmds idxs = sum . map (\(j, ts) -> lenYOf j * lenZ cmds ts) . IM.toList $ foldl' calc IM.empty idxs where
-  (mY, vY) = mkBimap [cmds V.! t | t <- idxs] sy
-  segY (Cmd _ p1 p2) = [mY IM.! sy p1 .. pred $ mY IM.! sy p2]
-  lenYOf j = vY V.! succ j - vY V.! j
-  calc winm t = foldl' (flip . uncurry $ IM.insertWith (<>)) winm $ [(j, [t]) | j <- segY (cmds V.! t)]
-
-sol22 :: V.Vector Cmd -> Int
-sol22 cmds = sum . map (\(i, ts) -> lenXOf i * areaYZ cmds ts) . IM.toList $ foldl' calc IM.empty [0 .. pred $ V.length cmds] where
-  (mX, vX) = mkBimap (V.toList cmds) sx
-  segX (Cmd _ p1 p2) = [mX IM.! sx p1 .. pred $ mX IM.! sx p2]
-  lenXOf i = vX V.! succ i - vX V.! i
-  calc winm t = foldl' (flip . uncurry $ IM.insertWith (<>)) winm $ [(i, [t]) | i <- segX (cmds V.! t)]
+sol22 :: [Cmd] -> Int
+sol22 cmds = volume $ foldl' (flip runCmd) (mempty, mempty) cmds where
+  volOf cuboid = product $ sizeInter <$> cuboid
+  volume (adds, subs) = sum (map volOf $ MS.toList adds) - sum (map volOf $ MS.toList subs)
 
 sol22F, sol22S :: [String] -> Int
-sol22F l = sol22 . V.fromList $ cmds where
-  cmds = [cmd | cmd@(Cmd _ (Vec3 x1 y1 z1) (Vec3 x2 y2 z2)) <- readCmd <$> l,
-    x1 >= -50, y1 >= -50, z1 >= -50, x2 <= 50, y2 <= 50, z2 <= 50]
-sol22S l = sol22 . V.fromList $ readCmd <$> l
+sol22F l = sol22 cmds where
+  cmds = [cmd | cmd@(Cmd _ cuboid) <- readCmd <$> l, all inRange cuboid]
+  inRange (Interval a b) = a >= -50 && b <= 50
+sol22S l = sol22 $ readCmd <$> l

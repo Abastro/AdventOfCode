@@ -1,14 +1,15 @@
 module Y2021.Prob25 ( sol25F ) where
 import Common
 import qualified Data.Vector.Unboxed.Mutable as MV
+import Data.Word
 import Data.Foldable
 import Control.Monad.ST
 mkMap l = mkFramed $ map st <$> l where st '>' = 1; st 'v' = 2; st _ = 0
 
-runStep :: Framed (MV.MVector s) Int -> ST s Bool -- TODO More optimization
+runStep :: Framed (MV.MVector s) Word8 -> ST s Bool -- TODO A way to optimize this?
 runStep st@Framed { frame = Frame w h } = do
   ch1 <- anyM (fmap snd . move (flip idx) (pred w) 1) [0 .. pred h]
-  ch2 <- anyM (fmap snd . move idx (pred h) 2) [0 .. pred w]
+  ch2 <- anyM (fmap snd . move idx        (pred h) 2) [0 .. pred w]
   pure $ ch1 || ch2
   where
     anyM f = foldlM (\b -> fmap (b ||) . f) False
