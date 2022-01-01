@@ -3,6 +3,7 @@ import Common
 import Data.Char
 import Data.Maybe
 import Data.Foldable
+import Control.Monad
 import Control.Monad.ST
 import qualified Data.IntSet as IS
 import qualified Data.Vector.Unboxed.Mutable as MV
@@ -20,7 +21,7 @@ next octo = do
   where
     ref = umap octo
     incrNFlash i = do t <- MV.read ref i; MV.write ref i (succ t)
-                      pure (i <$ boolToMaybe (t >= 9))
+                      pure (i <$ guard (t >= 9))
     flashCrds olds news = do
       let nnbs = IS.toList news >>= nbsI (frame octo)
       fl <- traverse incrNFlash nnbs

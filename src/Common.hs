@@ -3,7 +3,6 @@ module Common
   , inRange
   , (...)
   , applyN
-  , boolToMaybe
   , count
   , deintercalate
   , liftFn
@@ -21,6 +20,11 @@ module Common
   , fromIdx
   , getAt
   , frameCrds
+  , Enumed(..)
+  , genEnumed
+  , enumGet
+  , enumSets
+  , enumModifies
   ) where
 
 import           Control.Monad.ST
@@ -48,9 +52,6 @@ applyN :: Int -> (a -> a) -> a -> a
 applyN n f x = go n x where
   go 0 x = x
   go n x = let x' = f x in x' `seq` go (pred n) x'
-
-boolToMaybe :: Bool -> Maybe ()
-boolToMaybe f = if f then Just () else Nothing
 
 count :: Eq a => a -> [a] -> Int
 count n = length . filter (== n)
@@ -105,6 +106,7 @@ data Frame = Frame
   , height :: !Int
   }
   deriving (Eq, Ord, Show)
+-- |2D vector
 data Framed v a = Framed
   { frame :: !Frame
   , umap  :: !(v a)
@@ -114,13 +116,13 @@ data Framed v a = Framed
 mkFrame :: [[a]] -> Frame
 mkFrame l = Frame (length $ head l) (length l)
 
-mkFramed :: V.Vector v a => [[a]] -> Framed v a
+mkFramed :: (V.Vector v a) => [[a]] -> Framed v a
 mkFramed l = Framed (mkFrame l) (V.fromList $ concat l)
 
-mkFramedF :: V.Vector v a => (Vec2 Int -> a) -> Frame -> Framed v a
+mkFramedF :: (V.Vector v a) => (Vec2 Int -> a) -> Frame -> Framed v a
 mkFramedF f frame = Framed frame . V.fromList $ f <$> frameCrds frame
 
-framedThaw :: V.Vector v a => Framed v a -> ST s (Framed (V.Mutable v s) a)
+framedThaw :: (V.Vector v a) => Framed v a -> ST s (Framed (V.Mutable v s) a)
 framedThaw (Framed frame m) = Framed frame <$> V.thaw m
 
 inFrame :: Frame -> Vec2 Int -> Bool
@@ -136,13 +138,30 @@ fromIdx (Frame w _) n = let (q, r) = n `divMod` w in Vec2 r q
 {-# INLINE fromIdx #-}
 
 -- |NOTE: Bound is not checked
-getAt :: V.Vector v a => Framed v a -> Vec2 Int -> a
+getAt :: (V.Vector v a) => Framed v a -> Vec2 Int -> a
 getAt (Framed frame m) p = m V.! frameIdx frame p
 {-# INLINE getAt #-}
 
 frameCrds :: Frame -> [Vec2 Int]
 frameCrds (Frame w h) = [ Vec2 i j | j <- [0 .. pred h], i <- [0 .. pred w] ]
 
--- TODO EnumMaps, 2D/3D maps
+-- |Enumerated vector by a bounded enum type e, assuming minBound == 0.
+newtype Enumed e v a = Enumed {
+    underVec :: v a
+  } deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
+genEnumed :: (Enum e, Bounded e, V.Vector v a) => (e -> a) -> Enumed e v a
+genEnumed f = Enumed $ V.generate (succ $ fromEnum maxBnd) (f . toEnum) where
+  maxBnd = let m = maxBound; _ = f m in m
 
+enumGet :: (Enum e, V.Vector v a) => Enumed e v a -> e -> a
+enumGet (Enumed v) e = V.unsafeIndex v $ fromEnum e
+{-# INLINE enumGet #-}
+
+enumSets :: (Enum e, V.Vector v a) => [(e, a)] -> Enumed e v a -> Enumed e v a
+enumSets xs (Enumed v) = Enumed $ V.unsafeUpd v [(fromEnum e, x) | (e, x) <- xs]
+{-# INLINE enumSets #-}
+
+enumModifies :: (Enum e, V.Vector v a) => (a -> b -> a) -> [(e, b)] -> Enumed e v a -> Enumed e v a
+enumModifies f xs (Enumed v) = Enumed $ V.unsafeAccum f v [(fromEnum e, x) | (e, x) <- xs]
+{-# INLINE enumModifies #-}

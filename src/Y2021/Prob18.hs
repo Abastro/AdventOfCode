@@ -1,8 +1,8 @@
 module Y2021.Prob18 ( sol18F, sol18S ) where
-import Common
 import Text.Read
 import Data.List
 import Control.Applicative
+import Control.Monad
 
 data Snail a = RegNum !a | PairNum !(Snail a) !(Snail a) deriving (Eq, Functor, Foldable, Show)
 instance Read a => Read (Snail a) where
@@ -21,7 +21,7 @@ reduceSnail snail = maybe snail reduceSnail $ step snail where -- MAYBE Optimize
   explLeft (l', ma, mb) r = (PairNum l' r', ma, 0) where r' = addLeft mb r
   explRight l (r', ma, mb) = (PairNum l' r', 0, mb) where l' = addRight ma l
 
-  split (RegNum n) = let (d, r) = n `divMod` 2 in (RegNum d `PairNum` RegNum (d + r)) <$ boolToMaybe (n >= 10)
+  split (RegNum n) = let (d, r) = n `divMod` 2 in (RegNum d `PairNum` RegNum (d + r)) <$ guard (n >= 10)
   split (l `PairNum` r) = ((`PairNum` r) <$> split l) <|> ((l `PairNum`) <$> split r)
 
   addLeft n (PairNum l r) = PairNum (addLeft n l) r; addLeft n (RegNum m) = RegNum (n + m)

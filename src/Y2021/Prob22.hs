@@ -3,12 +3,13 @@ import Common
 import Data.Char
 import Data.List
 import qualified Data.MultiSet as MS
+import Control.Monad
 
 data Interval a = Interval !a !a deriving (Eq, Ord, Show) -- Interval [a, b]
 instance Ord a => Semigroup (Interval a) where -- Provide intersection
   Interval a b <> Interval a' b' = Interval (max a a') (min b b')
 
-nonEmpty int@(Interval a b) = int <$ boolToMaybe (a <= b)
+nonEmpty int@(Interval a b) = int <$ guard (a <= b)
 sizeInter (Interval a b) = b - a + 1
 
 type Cuboid = Vec3 (Interval Int)
