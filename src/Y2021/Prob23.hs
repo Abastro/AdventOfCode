@@ -10,7 +10,7 @@ import Control.Applicative
 import Control.Monad.State
 import Data.Bits
 
--- TODO More optimization required
+-- MAYBE - How do I optimize this further?
 data Amph = AmA | AmB | AmC | AmD deriving (Eq, Ord, Enum, Bounded, Show) -- cost 10^e
 data Hallway = LLsp | Lsp | IAB | IBC | ICD | Rsp | RRsp deriving (Eq, Ord, Enum, Bounded, Show)
 data Cfg = Cfg { halls :: !(V.Vector (Maybe Amph)), rooms :: !(V.Vector [Amph]) }
