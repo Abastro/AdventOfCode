@@ -1,0 +1,4 @@
+packages: ./*.cabal
+constraints: derive-storable +sumtypes
+
+package AdventOfCode

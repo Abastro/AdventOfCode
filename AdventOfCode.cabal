@@ -79,6 +79,7 @@ executable AdventOfCode
     , vector ==0.12.*
     , transformers ==0.5.*
     , mtl ==2.2.*
+    , derive-storable ==0.3.*
     , multiset== 0.3.*
     -- Just to simply measure some time (Benchmark does not make sense)
     , timeit ==2.*
