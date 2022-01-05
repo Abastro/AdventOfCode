@@ -1,6 +1,7 @@
 module Y2021.Prob23 ( sol23F, sol23S ) where
 import Common
 import Data.Char
+import Data.Ord
 import Data.Maybe
 import Data.List
 import qualified Data.Vector as V
@@ -53,20 +54,25 @@ possNext :: Int -> Cfg -> [(Int, Cfg)]
 possNext d (Cfg oldHall oldRoom) = do
   room <- filter (not . isRoomFree oldRoom) [AmA .. AmD]
   case oldRoom V.! fromEnum room of
-    [] -> []
-    (toMove : rNew) -> nxtOf <$> towardLR (\f -> takeWhile (isNothing . f)) oldHall room where
+    [] -> [] -- TODO Calculate next using 'occupied'
+    (toMove : rNew) -> map nxtOf . filter consider $ towardLR (\f -> takeWhile (isNothing . f)) oldHall room where
       newRoom = oldRoom V.// [(fromEnum room, rNew)]
       frees = filter (isRoomFree newRoom) [AmA .. AmD]
       nxtOf hall = (costM + cost, stored) where
         newHall = oldHall V.// [(fromEnum hall, Just toMove)]
         costM = costAm toMove * distBtwn d hall room (length rNew)
         (cost, stored) = tryStore d frees (Cfg newHall newRoom)
+  where
+    occupied = V.toList $ V.imapMaybe (\i v -> needRight (toEnum @Hallway i) <$> v) oldHall
+    needRight hall amph = (hall <= leftOf amph, hall)
+    (toRight, dived) = minimumBy (comparing divSize) ((True, LLsp) : occupied)
+    divSize (flag, hall) = if flag then fromEnum RRsp - fromEnum hall else fromEnum hall
+    consider hall = if toRight then hall > dived else hall < dived
 
 -- |Tries storing amphipods capable of going to room
 tryStore :: Int -> [Amph] -> Cfg -> (Int, Cfg)
 tryStore d freeRooms (Cfg oldHall oldRoom) =
   if null canMoves then (0, Cfg oldHall oldRoom) else (finCost + curCost, finCfg) where
-    -- TODO Optimize for single store pass
     mayMove room hall = hall <$ guard (oldHall V.! fromEnum hall == Just room)
     getMove room = (, room) <$> towardLR (\f -> mayMove room <=< find (isJust . f)) oldHall room
     canMoves = mapMaybe getMove freeRooms -- For each room, one at a time

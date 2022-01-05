@@ -5,7 +5,6 @@ version:             0.1.0.0
 author:              Abastro
 maintainer:          abab9579@naver.com
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
 
 executable AdventOfCode
   main-is:             Main.hs
