@@ -12,8 +12,8 @@ zipInt i j = i + j * 1024
 setOf (Line p q) = IS.fromList $ zipWith zipInt (x p ... x q) (y p ... y q)
 
 sol5 :: [Line] -> Int
-sol5 = IS.size . snd . foldl' acc (IS.empty, IS.empty) . fmap setOf where -- TODO Inefficient, perhaps better algorithm?
-  acc (al, dup) s = (al <> s, dup <> (al `IS.intersection` s)) -- Takes that much
+sol5 = IS.size . snd . foldl' acc (IS.empty, IS.empty) . fmap setOf where -- MAYBE Inefficient, perhaps better algorithm?
+  acc (al, dup) s = (al <> s, dup <> (al `IS.intersection` s))
 
 sol5F, sol5S :: [String] -> Int
 sol5F l = sol5 [Line p q | Line p q <- map read l, x p == x q || y p == y q]

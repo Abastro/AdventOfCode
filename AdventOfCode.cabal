@@ -67,6 +67,7 @@ executable AdventOfCode
       Y2021.Prob23
       Y2021.Prob24
       Y2021.Prob25
+      Y2021.Prob25b
       Y2021.Y2021
 
   build-depends:
@@ -80,6 +81,8 @@ executable AdventOfCode
     , mtl ==2.2.*
     , derive-storable ==0.3.*
     , multiset== 0.3.*
+    , wide-word== 0.1.*
+    -- TODO Perhaps use "foundation"
     -- Just to simply measure some time (Benchmark does not make sense)
     , timeit ==2.*
   hs-source-dirs:      src/
