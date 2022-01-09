@@ -16,4 +16,4 @@
 - Done on *Intel(R) Core(TM) i7-6500U CPU @ 2.50GHz* with 4GB+4GB DDR3 RAM
   - Multithreading not used
   - Input reading time included
-- [AoC2021 Benchmark](/aoc2021bench.html)
+- [AoC2021 Benchmark](https://htmlpreview.github.io/?https://github.com/Abastro/AdventOfCode/blob/master/aoc2021bench.html)
