@@ -1,6 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
-module ProbSol (
-  ProbClass(..)
+module ProbSol
+  ( ProbClass(..)
   , ProbN(..)
   , InputForm(..)
   , ifStr
@@ -10,10 +10,11 @@ module ProbSol (
   , mkProb
   , Solution(..)
   , SealPS(..)
-  , mkSeal) where
-import Text.Read
+  , mkSeal
+  ) where
 import           Text.ParserCombinators.ReadP   ( string )
 import           Text.Printf
+import           Text.Read
 
 data ProbClass = Fst | Snd
   deriving (Eq, Ord, Show, Read)

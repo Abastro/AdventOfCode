@@ -1,6 +1,8 @@
+{-# LANGUAGE Rank2Types #-}
 module Main where
 
 import           Control.Monad
+import           Criterion.Main
 import           Data.Foldable
 import qualified Data.Map                      as M
 import           ProbSol
@@ -22,12 +24,16 @@ main = do
   maybe (putStrLn "Unknown Year") onYear (apps M.!? yr)
  where
   onYear psols = do
-    id <- putStr "Code: " >> getLine
-    if id == "all"
-      then for_ (M.toList psols) $ \(pn, Seal prob sol _) -> do
+    putStr "Code: " >> getLine >>= \case
+      "bench" ->
+        defaultMain [bgroup "AoC" $ uncurry benchPS <$> M.toList psols]
+      "all" -> for_ (M.toList psols) $ \(pn, Seal prob sol _) -> do
         putStrLn "" >> putStrLn (show pn <> ":")
         onPS prob sol
-      else maybe (putStrLn "Wrong code") onSeal (readMaybe id >>= (psols M.!?))
+      pid ->
+        maybe (putStrLn "Wrong code") onSeal (readMaybe pid >>= (psols M.!?))
+
+  onSeal :: SealPS -> IO ()
   onSeal (Seal prob sol others) = do
     onPS prob sol
     unless (null others) $ do
@@ -42,3 +48,10 @@ main = do
     if exp == res
       then printf "Matches: %s\n" (show res)
       else printf "Expected: %s, Actual: %s\n" (show exp) (show res)
+
+  benchPS pn (Seal prob sol _) = bench (show pn) $ nfIO $ do
+    let InpForm form = inpForm prob
+    file <- readFile (inpLoc prob)
+    let exp = expAns prob
+    let res = solution sol $ form file
+    pure (exp == res)
